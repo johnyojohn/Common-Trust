@@ -1,4 +1,4 @@
-import {db} from "./firebase.js";
+import { db } from "./firebase.js";
 import { deleteDoc, doc, arrayRemove, increment, getDoc } from "firebase/firestore";
 
 const deletePostFromUser = async (postId, userId) => {

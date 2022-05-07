@@ -2,12 +2,14 @@ import { db } from "./firebase.js";
 import * as express from "express";
 import { addCommentToPost, addCommentToUser } from "./putUtils.js";
 import { deleteCommentFromPost, deleteCommentFromUser } from "./deleteUtils.js";
+import { getDoc, doc, updateDoc, arrayUnion, increment, deleteDoc } from "firebase/firestore";
 
 const router = express.Router();
 
 router.get("/:id", (req, res) => {
     const id = req.params.id;
-    db.collection("comments").doc(id).get()
+    const commentDocReference = doc(db, "comments", id);
+    getDoc(commentDocReference)
         .then((snapshot) => {
             if (!snapshot) {
                 return res.status(404).json({
@@ -26,8 +28,7 @@ router.get("/:id", (req, res) => {
         })
         .catch((err) => {
             return res.status(500).json({ error: err });
-        }
-        );
+        });
 });
 
 router.put("/:id", async (req, res) => {
@@ -39,9 +40,9 @@ router.put("/:id", async (req, res) => {
     const postId = "postId" in req.body ? req.body.postId : null;
     const authorId = "authorId" in req.body ? req.body.authorId : null;
 
-    const commentDocReference = db.collection("comments").doc(id);
+    const commentDocReference = doc(db, "comments", id);
     try {
-        const commentSnapshot = await commentDocReference.get()
+        const commentSnapshot = await getDoc(commentDocReference);
         if (!commentSnapshotexists) {
             return res.status(404).json({
                 message: "Comment not found",
@@ -63,7 +64,7 @@ router.put("/:id", async (req, res) => {
             const updateUser = await addCommentToUser(id, comment.authorId);
             const updatePost = await addCommentToPost(id, comment.postId);
             if (updateUser && updatePost) {
-                await commentDocReference.update(comment);
+                await updateDoc(commentDocReference, comment);
                 return res.status(200).json({
                     message: "Successfully updated comment",
                     data: {
@@ -86,9 +87,9 @@ router.put("/:id", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
     const id = req.params.id;
-    const commentDocReference = db.collection("comments").doc(id);
+    const commentDocReference = doc(db, "comments", id);
     try {
-        const commentSnapshot = await commentDocReference.get();
+        const commentSnapshot = await getDoc(commentDocReference);
         if (!commentSnapshot) {
             return res.status(404).json({
                 message: "Comment not found",
@@ -99,7 +100,7 @@ router.delete("/:id", async (req, res) => {
             const updateUser = await deleteCommentFromUser(id, comment.authorId);
             const updatePost = await deleteCommentFromPost(id, comment.postId);
             if (updateUser && updatePost) {
-                await commentDocReference.delete();
+                await deleteDoc(commentDocReference);
                 return res.status(200).json({
                     message: "Successfully deleted comment",
                 });

@@ -2,12 +2,14 @@ import { db } from "./firebase.js";
 import * as express from "express";
 import { addUserToClass } from "./putUtils.js";
 import { deleteUserFromClass, deleteClassFromUser, deleteAllCommentsFromPost, deletePostFromUser } from "./deleteUtils.js";
+import { getDoc, updateDoc, doc, deleteDoc } from "firebase/firestore";
 
 const router = express.Router();
 
 router.get("/:id", async (req, res) => {
     const id = req.params.id;
-    await db.collection("classes").doc(id).get()
+    const classDocReference = doc(db, "classes", id);
+    await getDoc(classDocReference)
         .then((snapshot) => {
             if (!snapshot.exists) {
                 return res.status(404).json({
@@ -38,9 +40,9 @@ router.put("/:id", async (req, res) => {
     const courseFullTitle = "courseFullTitle" in req.body ? req.body.courseFullTitle : null;
     const instructorsIdArr = "instructorsIdArr" in req.body ? req.body.instructorsIdArr : null;
 
-    const classDocReference = db.collection("classes").doc(id);
+    const classDocReference = doc(db, "classes", id);
     try {
-        const classDoc = await classDocReference.get();
+        const classDoc = await getDoc(classDocReference);
         if (!classDoc.exists) {
             return res.status(404).json({
                 message: "Class not found",
@@ -70,7 +72,7 @@ router.put("/:id", async (req, res) => {
             await removedInstructors.map(async (instructorId) => {
                 await deleteUserFromClass(instructorId, id);
             });
-            await classDocReference.update(classData);
+            await updateDoc(classDocReference, classData);
             return res.status(200).json({
                 message: "Successfully updated class",
             });
@@ -83,8 +85,8 @@ router.put("/:id", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
     const id = req.params.id;
-    const classDocReference = db.collection("classes").doc(id);
-    await classDocReference.get()
+    const classDocReference = doc(db, "classes", id);
+    await getDoc(classDocReference)
         .then((snapshot) => {
             if (!snapshot.exists) {
                 const error = new Error("Class not found");
@@ -104,18 +106,19 @@ router.delete("/:id", async (req, res) => {
                     await deleteClassFromUser(id, instructorId);
                 }),
                 postsIdArr.map(async (postId) => {
-                    const postData = await db.collection("posts").doc(postId).get();
+                    const postData = await getDoc(doc(db, "posts", postId));
                     const {authorId, commentsIdArr} = postData.data();
                     await deletePostFromUser(postId, authorId);
                     await deleteAllCommentsFromPost(commentsIdArr);
                 }),
-                classDocReference.delete()
+                await deleteDoc(classDocReference),
             ])
         })
         .catch((err) => {
             if (err.status === 404) {
                 return res.status(404).json({
                     message: err.message,
+                    error: err,
                 });
             }
             else {

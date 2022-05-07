@@ -2,6 +2,7 @@ import { db } from "./firebase.js";
 import * as express from "express";
 import * as firestore from "firebase/firestore";
 import { addCommentToUser, addCommentToPost } from "./putUtils.js";
+import { getDocs, collection, doc, setDoc, serverTimestamp } from "firebase/firestore";
 
 const router = express.Router();
 
@@ -14,7 +15,8 @@ const commentPostReqCheck = (req) => {
 };
 
 router.get("/", async (req) => {
-    await db.collection("comments").get()
+    const commentsDocReference = collection(db, "comments");
+    await getDocs(commentsDocReference)
         .then((snapshot) => {
             const comments = snapshot.docs.map((doc) => {
                 return {
@@ -42,12 +44,13 @@ router.post("/", async (req, res) => {
     const postId = req.body.postId;
     const content = req.body.content;
 
-    const commentId = db.collection("comments").doc().id;
+    const commentRef = doc(collection(db, "comments"));
+    const commentId = commentRef.id;
     var newComment = {
         authorId: authorId,
         postId: postId,
         content: content,
-        dateCreated: firestore.FieldValue.serverTimestamp(),
+        dateCreated: serverTimestamp(),
         likedCount: 0,
         likedUsers: [],
     }
@@ -55,7 +58,7 @@ router.post("/", async (req, res) => {
         const updateUser = await addCommentToUser(authorId, commentId);
         const updatePost = await addCommentToPost(postId, commentId);
         if (updateUser && updatePost) {
-            await db.collection("comments").doc(commentId).set(newComment);
+            await setDoc(commentRef, newComment);
             return res.status(201).json({
                 message: "Successfully added comment",
                 data: {
