@@ -14,7 +14,7 @@ const commentPostReqCheck = (req) => {
     );
 };
 
-router.get("/", async (req) => {
+router.get("/", async (req, res) => {
     const commentsDocReference = collection(db, "comments");
     await getDocs(commentsDocReference)
         .then((snapshot) => {
