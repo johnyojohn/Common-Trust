@@ -1,7 +1,7 @@
 import { db } from "./firebase.js";
 import * as express from "express";
 import { addUserToClasses } from "./putUtils.js";
-import { getDocs, collection, doc, setDoc } from "firebase/firestore";
+import { getDocs, collection } from "firebase/firestore";
 
 const router = express.Router();
 
@@ -25,48 +25,6 @@ router.get("/", async (req, res) => {
         error: err
       });
     });
-});
-
-const userPostReqChek = (req) => {
-  return ("email" in req.body &&
-    "firstName" in req.body &&
-    "lastName" in req.body);
-};
-
-router.post("/", async (req, res) => {
-  if (!userPostReqChek(req)) {
-    return res.status(400).json({
-      message: "Missing required parameters",
-    });
-  } else {
-    const userPost = {
-      email: req.body.email,
-      firstName: req.body.firstName,
-      lastName: req.body.lastName,
-      classes: "classes" in req.body ? req.body.classes : [],
-      postsIdArr: [],
-      postsCount: 0,
-      commentsIdArr: [],
-      isInstructor: req.body.email.includes("_"),
-    };
-    try {
-      const userId = doc(db, "users").id;
-      await addUserToClasses(userId, userPost.classes);
-      await setDoc(db, "users", userId, userPost);
-      return res.status(201).json({
-        message: "User created",
-        data: {
-          id: userId,
-          ...userPost,
-        },
-      });
-    } catch (err) {
-      return res.status(500).json({
-        message: "Failed to create user",
-        error: err,
-      });
-    }
-  }
 });
 
 export default router;

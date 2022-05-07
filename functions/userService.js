@@ -2,7 +2,7 @@ import { db } from "./firebase.js";
 import * as express from "express";
 import { addUserToClasses } from "./putUtils.js";
 import { deleteUserFromClasses, deletePostFromClass, deleteAllCommentsFromPost } from "./deleteUtils.js";
-import { getDoc, collection, doc } from "firebase/firestore";
+import { getDoc, doc, updateDoc, deleteDoc, setDoc } from "firebase/firestore";
 
 const router = express.Router();
 
@@ -30,6 +30,48 @@ router.get("/:id", (req, res) => {
         });
 });
 
+const userPostReqChek = (req) => {
+    return ("email" in req.body &&
+      "firstName" in req.body &&
+      "lastName" in req.body);
+  };
+  
+  router.post("/:id", async (req, res) => {
+    if (!userPostReqChek(req)) {
+      return res.status(400).json({
+        message: "Missing required parameters",
+      });
+    } else {
+      const userPost = {
+        email: req.body.email,
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        classes: "classes" in req.body ? req.body.classes : [],
+        postsIdArr: [],
+        postsCount: 0,
+        commentsIdArr: [],
+        isInstructor: req.body.email.includes("_"),
+      };
+      try {
+        const userId = req.params.id;
+        await addUserToClasses(userId, userPost.classes);
+        await setDoc(db, "users", userId, userPost);
+        return res.status(201).json({
+          message: "User created",
+          data: {
+            id: userId,
+            ...userPost,
+          },
+        });
+      } catch (err) {
+        return res.status(500).json({
+          message: "Failed to create user",
+          error: err,
+        });
+      }
+    }
+  });
+
 router.put("/:id", async (req, res) => {
     const id = req.params.id;
     const email = "email" in req.body ? req.body.email : null;
@@ -40,9 +82,9 @@ router.put("/:id", async (req, res) => {
     const postsCount = "postsCount" in req.body ? req.body.postsCount : null;
     const commentsIdArr = "commentsIdArr" in req.body ? req.body.commentsIdArr : null;
 
-    const userDocReference = db.collection("users").doc(id);
+    const userDocReference = doc(db, "users", id);
     try {
-        const userDoc = getDocs(collection("users"))
+        const userDoc = await getDoc(userDocReference);
         if (!userDoc.exists) {
             return res.status(404).json({
                 message: "User not found",
@@ -69,7 +111,7 @@ router.put("/:id", async (req, res) => {
             const removedClasses = originalClasses.filter(className => !newClasses.includes(className));
             await deleteUserFromClasses(id, removedClasses);
             await addUserToClasses(id, addedClasses);
-            await userDocReference.update(userData);
+            await updateDoc(userDocReference, userData);
             return res.status(200).json({
                 message: "Successfully updated user",
             });
@@ -82,9 +124,9 @@ router.put("/:id", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
     const id = req.params.id;
-    const userDocReference = db.collection("users").doc(id);
+    const userDocReference = doc(db, "users", id);
     try {
-        const userDoc = await userDocReference.get();
+        const userDoc = await getDoc(userDocReference);
         if (!userDoc.exists) {
             return res.status(404).json({
                 message: "User not found",
@@ -95,11 +137,11 @@ router.delete("/:id", async (req, res) => {
             const classes = userData.classes;
             await deleteUserFromClasses(id, classes);
             for (const postId of userData.postsIdArr) {
-                const classId = db.collection("posts").doc(postId).get().then(snapshot => snapshot.data().classId);
+                const classId = await getDoc(doc(db, "posts", postId)).then(snapshot => snapshot.data().classId);
                 await deletePostFromClass(postId, classId);
                 await deleteAllCommentsFromPost(postId);
             }
-            await userDocReference.delete();
+            await deleteDoc(userDocReference);
             return res.status(200).json({
                 message: "Successfully deleted user",
             });
