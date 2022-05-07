@@ -1,7 +1,7 @@
 import { db } from "./firebase.js";
 import * as express from "express";
 import { addUserToClasses } from "./putUtils.js";
-import { getDocs, collection } from "firebase/firestore";
+import { getDocs, collection, doc, setDoc } from "firebase/firestore";
 
 const router = express.Router();
 
@@ -50,9 +50,9 @@ router.post("/", async (req, res) => {
       isInstructor: req.body.email.includes("_"),
     };
     try {
-      const userId = db.collection("users").doc().id;
+      const userId = doc(db, "users").id;
       await addUserToClasses(userId, userPost.classes);
-      await db.collection("users").doc(userId).set(userPost);
+      await setDoc(db, "users", userId, userPost);
       return res.status(201).json({
         message: "User created",
         data: {

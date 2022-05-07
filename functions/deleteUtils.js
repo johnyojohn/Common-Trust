@@ -1,73 +1,77 @@
+import {db} from "./firebase.js";
+import { deleteDoc, doc, arrayRemove, increment, getDoc } from "firebase/firestore";
+
 const deletePostFromUser = async (postId, userId) => {
-    const userDocReference = db.collection("users").doc(userId);
-    const userSnapshot = await userDocReference.get();
+    const userDocReference = doc(db, "users", userId);
+    const userSnapshot = await getDoc(userDocReference);
     if (!userSnapshot.exists) {
         return false;
     }
-    await userDocReference.update({
-        postsIdArr: admin.firestore.FieldValue.arrayRemove(postId),
-        postsCount: admin.firestore.FieldValue.increment(-1),
+    await updateDoc(userDocReference, {
+        postsIdArr: arrayRemove(postId),
+        postsCount: increment(-1),
     });
+
     return true;
 }
 
 const deletePostFromClass = async (postId, classId) => {
-    const classDocReference = db.collection("classes").doc(classId);
-    const classSnapshot = await classDocReference.get();
+    const classDocReference = doc(db, "classes", classId);
+    const classSnapshot = await getDoc(classDocReference);
     if (!classSnapshot.exists) {
         return false;
     }
-    await classDocReference.update({
-        postsIdArr: admin.firestore.FieldValue.arrayRemove(postId),
+    await updateDoc(classDocReference, {
+        postsIdArr: arrayRemove(postId),
     });
     return true;
 }
 
 const deleteCommentFromUser = async (commentId, userId) => {
-    const userDocReference = db.collection("users").doc(userId);
-    const userSnapshot = await userDocReference.get();
+    const userDocReference = doc(db, "users", userId);
+    const userSnapshot = await getDoc(userDocReference);
     if (!userSnapshot.exists) {
         return false;
     }
-    await userDocReference.update({
-        commentsIdArr: admin.firestore.FieldValue.arrayRemove(commentId),
+    await updateDoc(userDocReference, {
+        commentsIdArr: arrayRemove(commentId),
     });
     return true;
 }
 
 const deleteCommentFromPost = async (commentId, postId) => {
-    const postDocReference = db.collection("posts").doc(postId);
-    const postSnapshot = await postDocReference.get();
+    const postDocReference = doc(db, "posts", postId);
+    const postSnapshot = await getDoc(postDocReference);
     if (!postSnapshot.exists) {
         return false;
     }
-    await postDocReference.update({
-        commentsIdArr: admin.firestore.FieldValue.arrayRemove(commentId),
-    })
+    await updateDoc(postDocReference, {
+        commentsIdArr: arrayRemove(commentId),
+    });
     return true;
 }
 
 const deleteAllCommentsFromPost = async (commentsIdArr) => {
     for (const commentId of commentsIdArr) {
-        const commentDocReference = db.collection("comments").doc(commentId);
-        const commentSnapshot = await commentDocReference.get();
+        const commentDocReference = doc(db, "comments", commentId);
+        const commentSnapshot = await getDoc(commentDocReference);
         if (!commentSnapshot.exists) {
             continue;
         }
         await deleteCommentFromUser(commentId, commentSnapshot.data().userId);
-        await commentDocReference.delete();
+        await deleteDoc(commentDocReference);
     }
     return true;
 }
 
 const deleteUserFromClass = async (userId, classId) => {
-    const userDocReference = db.collection("users").doc(userId);
-    const userSnapshot = await userDocReference.get();
+    const userDocReference = doc(db, "users", userId);
+    const userSnapshot = await getDoc(userDocReference);
     if (!userSnapshot.exists) {
         return false;
     }
-    await userDocReference.update({
-        classes: admin.firestore.FieldValue.arrayRemove(classId),
+    await updateDoc(userDocReference, {
+        classesIdArr: arrayRemove(classId),
     });
     return true;
 }
@@ -80,13 +84,13 @@ const deleteUserFromClasses = async (userId, classesIdArr) => {
 }
 
 const deleteClassFromUser = async (classId, userId) => {
-    const userDocReference = db.collection("users").doc(userId);
-    const userSnapshot = await userDocReference.get();
+    const userDocReference = doc(db, "users", userId);
+    const userSnapshot = await getDoc(userDocReference);
     if (!userSnapshot.exists) {
         return false;
     }
-    await userDocReference.update({
-        classes: admin.firestore.FieldValue.arrayRemove(classId),
+    await updateDoc(userDocReference, {
+        classesIdArr: arrayRemove(classId),
     });
     return true;
 }

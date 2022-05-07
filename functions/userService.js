@@ -2,13 +2,13 @@ import { db } from "./firebase.js";
 import * as express from "express";
 import { addUserToClasses } from "./putUtils.js";
 import { deleteUserFromClasses, deletePostFromClass, deleteAllCommentsFromPost } from "./deleteUtils.js";
-import { getDocs } from "firebase/firestore";
+import { getDoc, collection, doc } from "firebase/firestore";
 
 const router = express.Router();
 
 router.get("/:id", (req, res) => {
     const id = req.params.id;
-    getDocs(collection("users"), id)
+    getDoc(doc(db, "users", id))
         .then((snapshot) => {
             if (!snapshot) {
                 return res.status(404).json({
@@ -42,7 +42,7 @@ router.put("/:id", async (req, res) => {
 
     const userDocReference = db.collection("users").doc(id);
     try {
-        const userDoc = await userDocReference.get();
+        const userDoc = getDocs(collection("users"))
         if (!userDoc.exists) {
             return res.status(404).json({
                 message: "User not found",

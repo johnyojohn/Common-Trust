@@ -1,11 +1,12 @@
 import { db } from "./firebase.js";
 import * as express from "express";
 import {addClassToUser} from "./putUtils.js";
+import {getDocs, collection, doc, setDoc} from "firebase/firestore";
 
 const router = express.Router();
 
 router.get("/", async (req, res) => {
-    await db.collection("classes").get()
+    getDocs(collection(db, "classes"))
         .then((snapshot) => {
             const classes = snapshot.docs.map((doc) => {
                 return {
@@ -45,8 +46,9 @@ router.post("/", async (req, res) => {
             studentsIdArr: [],
         };
         try {
-            const classId = db.collection("classes").doc().id;
-            await db.collection("classes").doc(classId).set(classPost);
+            const classRef = doc(collection(db, "classes"));
+            const classId = classRef.id;
+            await setDoc(classRef, classPost);
             for (instructorId of classPost.instructorsIdArr) {
                 await addClassToUser(classId, instructorId);
             }

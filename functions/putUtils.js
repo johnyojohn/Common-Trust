@@ -1,81 +1,78 @@
-
+import { db } from "./firebase.js";
+import {getDoc, doc, updateDoc, arrayUnion, increment} from "firebase/firestore";
 
 const addCommentToUser = async (commentId, userId) => {
-    const userDocReference = db.collection("users").doc(userId);
-    const userSnapshot = await userDocReference.get();
+    const userDocReference = doc(db, "users", userId);
+    const userSnapshot = await getDoc(userDocReference);
     if (!userSnapshot.exists) {
         return false;
     }
-    const user = userSnapshot.data();
-    const commentsIdArr = user.commentsIdArr;
-    if (!commentsIdArr) {
-        commentsIdArr = [];
-    }
-    commentsIdArr.push(commentId);
-    await userDocReference.update({ commentsIdArr });
+    await updateDoc(userDocReference, {
+        commentsIdArr: arrayUnion(commentId),
+    });
     return true;
 }
 
 const addCommentToPost = async (commentId, postId) => {
-    const postDocReference = db.collection("posts").doc(postId);
-    const postSnapshot = await postDocReference.get();
+    const postDocReference = doc(db, "posts", postId);
+    const postSnapshot = await getDoc(postDocReference);
     if (!postSnapshot.exists) {
         return false;
     }
-    const post = postSnapshot.data();
-    const commentsIdArr = post.commentsIdArr;
-    if (!commentsIdArr) {
-        commentsIdArr = [];
-    }
-    commentsIdArr.push(commentId);
-    await postDocReference.update({ commentsIdArr });
-    return true;
-}
-
-const addPostToClass = async (postId, classId) => {
-    const classDocReference = db.collection("classes").doc(classId);
-    const classSnapshot = await classDocReference.get();
-    if (!classSnapshot.exists) {
-        return false;
-    }
-    const classData = classSnapshot.data();
-    const postsIdArr = classData.postsIdArr;
-    if (!postsIdArr) {
-        postsIdArr = [];
-    }
-    postsIdArr.push(postId);
-    await classDocReference.update({ postsIdArr });
-    return true;
-}
-
-const addPostToUser = async (postId, userId) => {
-    const userDocReference = db.collection("users").doc(userId);
-    const userSnapshot = await userDocReference.get();
-    if (!userSnapshot.exists) {
-        return false;
-    }
-    const user = userSnapshot.data();
-    const postsIdArr = user.postsIdArr;
-    if (!postsIdArr) {
-        postsIdArr = [];
-    }
-    postsIdArr.push(postId);
-    await userDocReference.update({ postsIdArr });
-    return true;
-}
-
-const addUserToClass = async (userId, classId) => {
-    const classDocReference = db.collection("classes").doc(classId);
-    const classSnapshot = await classDocReference.get();
-    if (!classSnapshot.exists) {
-        return false;
-    }
-    await classDocReference.update({
-        usersIdArr: admin.firestore.FieldValue.arrayUnion(userId),
+    await updateDoc(postDocReference, {
+        commentsIdArr: arrayUnion(commentId),
     })
     return true;
 }
 
+const addPostToClass = async (postId, classId) => {
+    const classDocReference = doc(db, "classes", classId);
+    const classSnapshot = await getDoc(classDocReference);
+    if (!classSnapshot.exists) {
+        return false;
+    }
+    await updateDoc(classDocReference, {
+        postsIdArr: arrayUnion(postId)
+    });
+    return true;
+}
+
+const addPostToUser = async (postId, userId) => {
+    const userDocReference = doc(db, "users", userId);
+    const userSnapshot = await getDoc(userDocReference);
+    if (!userSnapshot.exists) {
+        return false;
+    }
+    await updateDoc(userDocReference, {
+        postsIdArr: arrayUnion(postId),
+        postsCount: increment(1),
+    });
+    return true;
+}
+
+const addUserToClass = async (userId, classId) => {
+    const classDocReference = doc(db, "classes", classId);
+    const classSnapshot = await getDoc(classDocReference);
+    if (!classSnapshot.exists) {
+        return false;
+    }
+    await updateDoc(classDocReference, {
+        studentsIdArr: arrayUnion(userId),
+    });
+    return true;
+}
+
+const addInstructorToClass = async (instructorId, classId) => {
+    const classDocReference = doc(db, "classes", classId);
+    const classSnapshot = await getDoc(classDocReference);
+    if (!classSnapshot.exists) {
+        return false;
+    }
+    await updateDoc(classDocReference, {
+        instructorsIdArr: arrayUnion(instructorId),
+    });
+    return true;
+}
 
 const addUserToClasses = async (userId, classesIdArr) => {
     for (const classId of classesIdArr) {
@@ -85,15 +82,15 @@ const addUserToClasses = async (userId, classesIdArr) => {
 }
 
 const addClassToUser = async (classId, userId) => {
-    const userDocReference = db.collection("users").doc(userId);
-    const userSnapshot = await userDocReference.get();
+    const userDocReference = doc(db, "users", userId);
+    const userSnapshot = await getDoc(userDocReference);
     if (!userSnapshot.exists) {
         return false;
     }
     await userSnapshot.update({
-        classes: admin.firestore.FieldValue.arrayUnion(classId),
+        classes: arrayUnion(classId),
     })
     return true;
 }
 
-export { addCommentToUser, addCommentToPost, addPostToClass, addPostToUser, addUserToClasses, addClassToUser, addUserToClass };
+export { addCommentToUser, addCommentToPost, addPostToClass, addPostToUser, addUserToClasses, addInstructorToClass, addClassToUser, addUserToClass };
