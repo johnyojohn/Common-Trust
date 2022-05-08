@@ -1,7 +1,6 @@
 import { db } from "./firebase.js";
 import * as express from "express";
 import * as firestore from "firebase/firestore";
-import { addPostToUser, addPostToClass } from "./putUtils.js";
 import { deletePostFromUser, deletePostFromClass, deleteAllCommentsFromPost } from "./deleteUtils.js";
 import { getDoc, doc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 
@@ -35,14 +34,12 @@ router.get("/:id", (req, res) => {
 
 router.put("/:id", async (req, res) => {
 
+    // cannot modify post's author or class
     const id = req.params.id;
     const title = "title" in req.body ? req.body.title : null;
     const content = "content" in req.body ? req.body.content : null;
     const postDate = serverTimestamp();
     const likedUsers = "likedUsers" in req.body ? req.body.likedUsers : null;
-    const likedCount = "likedCount" in req.body ? req.body.likedCount : null;
-    const classId = "classId" in req.body ? req.body.classId : null;
-    const authorId = "authorId" in req.body ? req.body.authorId : null;
     const commentsIdArr = "commentsIdArr" in req.body ? req.body.commentsIdArr : null;
 
     const postDocReference = doc(db, "posts", id);
@@ -56,31 +53,25 @@ router.put("/:id", async (req, res) => {
         else {
             const post = postSnapshot.data();
             const varToString = varObj => Object.keys(varObj)[0];
-            [[varToString(title), title],
-            [varToString(content), content],
-            [varToString(postDate), postDate],
-            [varToString(likedUsers), likedUsers],
-            [varToString(likedCount), likedCount],
-            [varToString(classId), classId],
-            [varToString(authorId), authorId],
-            [varToString(commentsIdArr), commentsIdArr]]
-            .forEach(([key, value]) => {
-                if (value !== null) {
-                    post[key] = value;
-                }
-            });
-            const updateUser = await addPostToUser(id, post.authorId);
-            const updateClass = await addPostToClass(id, post.classId);
-            if (updateUser && updateClass) {
-                await updateDoc(postDocReference, post);
-                return res.status(200).json({
-                    message: "Successfully updated post",
-                    data: {
-                        id: post.id,
-                        ...post,
+            [[varToString({ title }), title],
+            [varToString({ content }), content],
+            [varToString({ postDate }), postDate],
+            [varToString({ likedUsers }), likedUsers],
+            [varToString({ commentsIdArr }), commentsIdArr]]
+                .forEach(([key, value]) => {
+                    if (value !== null) {
+                        post[key] = value;
                     }
                 });
-            }
+            post["likedCount"] = likedUsers !== null ? likedUsers.length : 0;
+            await updateDoc(postDocReference, post);
+            return res.status(200).json({
+                message: "Successfully updated post",
+                data: {
+                    id: post.id,
+                    ...post,
+                }
+            });
         }
     }
     catch (err) {

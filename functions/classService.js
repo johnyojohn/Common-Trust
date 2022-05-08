@@ -1,6 +1,6 @@
 import { db } from "./firebase.js";
 import * as express from "express";
-import { addUserToClass } from "./putUtils.js";
+import { addInstructorToClass, addClassToUser } from "./putUtils.js";
 import { deleteUserFromClass, deleteClassFromUser, deleteAllCommentsFromPost, deletePostFromUser } from "./deleteUtils.js";
 import { getDoc, updateDoc, doc, deleteDoc } from "firebase/firestore";
 
@@ -52,27 +52,29 @@ router.put("/:id", async (req, res) => {
         else {
             const classData = classDoc.data();
             const varToString = varObj => Object.keys(varObj)[0];
-            const originalInstructors = classData.instructors;
+            const originalInstructors = classData.instructorsIdArr;
             const newInstructors = instructorsIdArr ? instructorsIdArr : originalInstructors;
             [[varToString({ departmentAbbr }), departmentAbbr],
             [varToString({ courseNumber }), courseNumber],
             [varToString({ courseFullTitle }), courseFullTitle],
-            [varToString({ instructorsIdArr }), instructorsIdArr],
-            [varToString({ postsIdArr }), postsIdArr],
-            [varToString({ studentsIdArr }), studentsIdArr]]
-            .forEach(([key, value]) => {
-                if (value !== null) {
-                    classData[key] = value;
-                }
-            });
-            const addedInstructors = newInstructors.filter(id => !originalInstructors.includes(id));
-            const removedInstructors = originalInstructors.filter(id => !newInstructors.includes(id));
-            await addedInstructors.map(async (instructorId) => {
-                await addUserToClass(instructorId, id);
-            });
-            await removedInstructors.map(async (instructorId) => {
-                await deleteUserFromClass(instructorId, id);
-            });
+            [varToString({ instructorsIdArr }), instructorsIdArr]]
+                .forEach(([key, value]) => {
+                    if (value !== null) {
+                        classData[key] = value;
+                    }
+                });
+            if (instructorsIdArr !== null) {
+                const addedInstructors = newInstructors.filter(id => !originalInstructors.includes(id));
+                const removedInstructors = originalInstructors.filter(id => !newInstructors.includes(id));
+                await addedInstructors.map(async (instructorId) => {
+                    await addInstructorToClass(instructorId, id);
+                    await addClassToUser(id, instructorId);
+                });
+                await removedInstructors.map(async (instructorId) => {
+                    await deleteUserFromClass(instructorId, id);
+                    await deleteClassFromUser(id, instructorId);
+                });
+            }
             await updateDoc(classDocReference, classData);
             return res.status(200).json({
                 message: "Successfully updated class",
@@ -109,7 +111,7 @@ router.delete("/:id", async (req, res) => {
                 }),
                 postsIdArr.map(async (postId) => {
                     const postData = await getDoc(doc(db, "posts", postId));
-                    const {authorId, commentsIdArr} = postData.data();
+                    const { authorId, commentsIdArr } = postData.data();
                     await deletePostFromUser(postId, authorId);
                     await deleteAllCommentsFromPost(commentsIdArr);
                 }),
