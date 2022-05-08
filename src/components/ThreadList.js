@@ -10,7 +10,6 @@ const ThreadOverview = ({postList: postList, setSelectedPosts: setSelectedPosts}
     const loadPosts = () => {
         setPosts([]);
         postList.map(async (post) => {
-            console.log(post)
             try{
                 const response = await axios.get(`http://localhost:5001/common-trust/us-central1/default/post/${post}`);
                 setPosts((prevPost)=> [...prevPost, response.data.data]);
@@ -40,7 +39,6 @@ const ThreadOverview = ({postList: postList, setSelectedPosts: setSelectedPosts}
                         <Row>
                             <ListGroup>
                                 {posts.map((post, index) => {
-                                    console.log(post)
                                     return(
                                     <ListGroup.Item  key ={post.id} action onClick ={(e)=>{handlePostNavigate(e, post)}}>
                                         {post.title}

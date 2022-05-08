@@ -29,10 +29,6 @@ function App() {
     return unsubscribe;
   }, [])
 
-  useEffect(() => {
-    console.log(user);
-  }, [user])
-
   return (
     <div>
       <MainHeader user={user} />
