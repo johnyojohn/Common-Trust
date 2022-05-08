@@ -1,7 +1,6 @@
-import {db, auth} from './firebase.js';
 import express from "express";
 import * as functions from "firebase-functions";
-import compression from "compression";
+// import compression from "compression";
 import bodyParser from "body-parser";
 import cors from "cors";
 import postsService from "./postsService.js";
@@ -16,13 +15,13 @@ import classService from "./classService.js";
 const app = express();
 app.use(
     cors({
-        origin: "http://localhost:3000",
-        credentials: true,
+      origin: "http://localhost:3000",
+      credentials: true,
     })
-)
-app.use(compression());
+);
+// app.use(compression());
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({extended: true}));
 
 app.use("/posts", postsService);
 app.use("/post", postService);
