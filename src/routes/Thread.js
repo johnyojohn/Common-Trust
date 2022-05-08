@@ -81,8 +81,6 @@ const Thread = () => {
                             const authorResponse = await axios.get(`https://us-central1-common-trust.cloudfunctions.net/default/user/${commentResponse.data.data.authorId}`);
                             commentResponse.data.data.authorId = authorResponse.data.data.firstName + ' ' + authorResponse.data.data.lastName;
                             commentResponse.data.data.dateCreated = new Date(commentResponse.data.data.dateCreated.seconds * 1000).toLocaleString();
-                            console.log(commentResponse.data.data, "comment");
-                            console.log(authorResponse.data.data, "author")
                             setSelectedPostsComments((prevComments) => [...prevComments, commentResponse.data.data]);
                         } catch (err) {
                             console.log(err);
