@@ -60,8 +60,8 @@ router.put("/:id", async (req, res) => {
             [varToString({ instructorsIdArr }), instructorsIdArr],
             [varToString({ postsIdArr }), postsIdArr],
             [varToString({ studentsIdArr }), studentsIdArr]]
-            .forEach((key, value) => {
-                if (value) {
+            .forEach(([key, value]) => {
+                if (value !== null) {
                     classData[key] = value;
                 }
             });

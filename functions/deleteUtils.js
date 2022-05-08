@@ -1,5 +1,5 @@
 import { db } from "./firebase.js";
-import { deleteDoc, doc, arrayRemove, increment, getDoc } from "firebase/firestore";
+import { deleteDoc, doc, arrayRemove, increment, getDoc, updateDoc } from "firebase/firestore";
 
 const deletePostFromUser = async (postId, userId) => {
     const userDocReference = doc(db, "users", userId);
@@ -65,13 +65,13 @@ const deleteAllCommentsFromPost = async (commentsIdArr) => {
 }
 
 const deleteUserFromClass = async (userId, classId) => {
-    const userDocReference = doc(db, "users", userId);
-    const userSnapshot = await getDoc(userDocReference);
-    if (!userSnapshot.exists) {
+    const classDocReference = doc(db, "classes", classId);
+    const classSnapshot = await getDoc(classDocReference);
+    if (!classSnapshot.exists) {
         return false;
     }
-    await updateDoc(userDocReference, {
-        classes: arrayRemove(classId),
+    await updateDoc(classDocReference, {
+        studentsIdArr: arrayRemove(userId),
     });
     return true;
 }

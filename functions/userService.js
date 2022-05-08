@@ -110,8 +110,8 @@ router.put("/:id", async (req, res) => {
             [varToString({ postsIdArr }), postsIdArr],
             [varToString({ postsCount }), postsCount],
             [varToString({ commentsIdArr }), commentsIdArr]]
-                .forEach((key, value) => {
-                    if (value) {
+                .forEach(([key, value]) => {
+                    if (value !== null) {
                         userData[key] = value;
                     }
                 });

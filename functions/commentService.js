@@ -57,8 +57,8 @@ router.put("/:id", async (req, res) => {
             [varToString({ likedCount }), likedCount], 
             [varToString({ postId }), postId], 
             [varToString({ authorId }), authorId]]
-            .forEach((key, value) => {
-                if (value) {
+            .forEach(([key, value]) => {
+                if (value !== null) {
                     comment[key] = value;
                 }
             });

@@ -55,12 +55,20 @@ router.put("/:id", async (req, res) => {
         }
         else {
             const post = postSnapshot.data();
-            [title, content, postDate, likedUsers, likedCount, classId, authorId, commentsIdArr].forEach((field) => {
-                if (field) {
-                    post[field] = field;
+            const varToString = varObj => Object.keys(varObj)[0];
+            [[varToString(title), title],
+            [varToString(content), content],
+            [varToString(postDate), postDate],
+            [varToString(likedUsers), likedUsers],
+            [varToString(likedCount), likedCount],
+            [varToString(classId), classId],
+            [varToString(authorId), authorId],
+            [varToString(commentsIdArr), commentsIdArr]]
+            .forEach(([key, value]) => {
+                if (value !== null) {
+                    post[key] = value;
                 }
             });
-
             const updateUser = await addPostToUser(id, post.authorId);
             const updateClass = await addPostToClass(id, post.classId);
             if (updateUser && updateClass) {
