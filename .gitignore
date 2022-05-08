@@ -1,0 +1,4 @@
+node_modules/
+functions/firebaseInit.js
+yarn.lock
+build/
