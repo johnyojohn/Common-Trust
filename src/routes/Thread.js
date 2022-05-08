@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
+import React from 'react'
 import ThreadOverview from "../components/ThreadList";
 import { Row, Col, Button, Stack } from 'react-bootstrap';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Card from 'react-bootstrap/Card';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -11,12 +12,18 @@ import {auth} from '../firebase';
 
 const Thread = () => {
     const { id } = useParams();
-    console.log(useParams());
+    const queryParams = useQuery().get('q');
     const [classInfo, setClassInfo] = useState([]);
     const [posts, setPosts] = useState([]);
-    const [selectedPosts, setSelectedPosts] = useState('');
     const [selectedPostsContent, setSelectedPostsContent] = useState({});
     const [selectedPostsComments, setSelectedPostsComments] = useState([]);
+
+    function useQuery() {
+        const { search } = useLocation();
+      
+        return React.useMemo(() => new URLSearchParams(search), [search]);
+    }
+
     const getClassInfo = async () => {
         try {
             const response = await axios.get(`http://localhost:5001/common-trust/us-central1/default/class/${id}`);
@@ -50,7 +57,7 @@ const Thread = () => {
 
     const handlePostLike = async () => {
         try {
-            const response = await axios.put(`http://localhost:5001/common-trust/us-central1/default/post/${selectedPosts}`,{userId: auth.currentUser.uid});
+            const response = await axios.put(`http://localhost:5001/common-trust/us-central1/default/post/${queryParams}`,{userId: auth.currentUser.uid});
         } catch (err) {
             console.log(err);
         }
@@ -62,8 +69,9 @@ const Thread = () => {
     }, [])
 
     useEffect(() => {
-        if (selectedPosts !== '') {
-            getPostInfo(selectedPosts).then(
+        console.log(queryParams)
+        if (queryParams !== null) {
+            getPostInfo(queryParams).then(
                 (commentIdArr) => {
                     setSelectedPostsComments([]);
                     commentIdArr.map(async (commentId) => {
@@ -82,7 +90,7 @@ const Thread = () => {
                 }
             );
         }
-    }, [selectedPosts])
+    }, [queryParams])
 
     useEffect(() => {
         console.log(selectedPostsComments, "entire comments");
@@ -102,9 +110,9 @@ const Thread = () => {
             </Row>
             <Row>
                 <Col sm={4}>
-                    <ThreadOverview postList={posts} setSelectedPosts={setSelectedPosts} />
+                    <ThreadOverview postList={posts} />
                 </Col>
-                {selectedPosts !== '' && (
+                {queryParams !== null && (
                     <Col sm={7}>
                         <Card style={{ height: '18rem' }}>
                             <Card.Header as="h5">
@@ -170,7 +178,7 @@ const Thread = () => {
                                     </Card>)
                             })
                         }
-                        <PostComment postId={selectedPosts} />
+                        <PostComment postId={queryParams} />
                     </Col>)}
             </Row>
         </>

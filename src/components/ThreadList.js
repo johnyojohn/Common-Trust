@@ -1,10 +1,12 @@
 import { Tab, Row, Col } from 'react-bootstrap';
 import ListGroup from 'react-bootstrap/ListGroup';
 import {useEffect, useState} from 'react'
+import {useNavigate} from 'react-router-dom'
 import axios from 'axios'
 
 const ThreadOverview = ({postList: postList, setSelectedPosts: setSelectedPosts}) => {
     const [posts, setPosts] = useState([]);
+    const navigate = useNavigate();
     const loadPosts = () => {
         setPosts([]);
         postList.map(async (post) => {
@@ -27,7 +29,8 @@ const ThreadOverview = ({postList: postList, setSelectedPosts: setSelectedPosts}
 
 
     const handlePostNavigate = (event, data) => {
-        setSelectedPosts(data.id);
+        navigate('?q=' + data.id)
+        // setSelectedPosts(data.id);
     }
     return (
         <div className="container">

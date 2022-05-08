@@ -113,7 +113,7 @@ const CreateClass = () => {
                     </InputGroup>
                     <div className="mb-3">
                         {instructors.map(instructor => {
-                            return (<Button variant="info" >
+                            return (<Button key={instructor.id} variant="info" >
                             {instructor.name}{' '}
                             <CloseButton key={instructor.id} value={instructor.id} onClick={handleInstructorDeletion}>
                             </CloseButton>
