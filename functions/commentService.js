@@ -36,15 +36,15 @@ router.put("/:id", async (req, res) => {
 
     const id = req.params.id;
     const content = "content" in req.body ? req.body.content : null;
-    const likedUsers = "likedUsers" in req.body ? req.body.likedUsers : null;
-    const likedCount = "likedCount" in req.body ? req.body.likedCount : null;
+    const likedUsers = "likedUsers" in req.body ? [...new Set(req.body.likedUsers)] : null;
+    const likedCount = likedUsers !== null ? likedUsers.length : null;
     const postId = "postId" in req.body ? req.body.postId : null;
     const authorId = "authorId" in req.body ? req.body.authorId : null;
 
     const commentDocReference = doc(db, "comments", id);
     try {
         const commentSnapshot = await getDoc(commentDocReference);
-        if (!commentSnapshotexists) {
+        if (!commentSnapshot.exists()) {
             return res.status(404).json({
                 message: "Comment not found",
             });
@@ -62,6 +62,7 @@ router.put("/:id", async (req, res) => {
                     comment[key] = value;
                 }
             });
+            comment["likedCount"] = likedUsers !== null ? likedUsers.length : 0;
             const updateUser = await addCommentToUser(id, comment.authorId);
             const updatePost = await addCommentToPost(id, comment.postId);
             if (updateUser && updatePost) {

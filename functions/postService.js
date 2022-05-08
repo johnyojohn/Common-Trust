@@ -39,7 +39,8 @@ router.put("/:id", async (req, res) => {
     const title = "title" in req.body ? req.body.title : null;
     const content = "content" in req.body ? req.body.content : null;
     const postDate = serverTimestamp();
-    const likedUsers = "likedUsers" in req.body ? req.body.likedUsers : null;
+    const likedUsers = "likedUsers" in req.body ? [...new Set(req.body.likedUsers)] : null;
+    const likedCount = likedUsers !== null ? likedUsers.length : null;
     const commentsIdArr = "commentsIdArr" in req.body ? req.body.commentsIdArr : null;
 
     const postDocReference = doc(db, "posts", id);
@@ -57,13 +58,13 @@ router.put("/:id", async (req, res) => {
             [varToString({ content }), content],
             [varToString({ postDate }), postDate],
             [varToString({ likedUsers }), likedUsers],
+            [varToString({ likedCount }), likedCount],
             [varToString({ commentsIdArr }), commentsIdArr]]
                 .forEach(([key, value]) => {
                     if (value !== null) {
                         post[key] = value;
                     }
                 });
-            post["likedCount"] = likedUsers !== null ? likedUsers.length : 0;
             await updateDoc(postDocReference, post);
             return res.status(200).json({
                 message: "Successfully updated post",
