@@ -7,6 +7,7 @@ import Card from 'react-bootstrap/Card';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 import PostComment from '../components/PostComment';
+import {auth} from '../firebase';
 
 const Thread = () => {
     const { id } = useParams();
@@ -38,6 +39,23 @@ const Thread = () => {
             console.log(err);
         }
     }
+
+    const handleCommentLike = async (comment) => {
+        try {
+            const response = await axios.put(`http://localhost:5001/common-trust/us-central1/default/comment/${comment.id}`,{userId: auth.currentUser.uid});
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    const handlePostLike = async () => {
+        try {
+            const response = await axios.put(`http://localhost:5001/common-trust/us-central1/default/post/${selectedPosts}`,{userId: auth.currentUser.uid});
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
 
     useEffect(() => {
         getClassInfo();
@@ -109,7 +127,7 @@ const Thread = () => {
                                             <p>
                                                 {'Posted on ' + selectedPostsContent.postDate}
                                             </p>
-                                            <Button variant="secondary" style={{ float: 'right' }}>
+                                            <Button onClick={handlePostLike} variant="secondary" style={{ float: 'right' }}>
                                                 <FontAwesomeIcon icon={faThumbsUp} />{' '}
                                                 {selectedPostsContent.likedCount}
                                             </Button>
@@ -141,7 +159,7 @@ const Thread = () => {
                                                         <p>
                                                             {'Posted on ' + comment.dateCreated}
                                                         </p>
-                                                        <Button variant="secondary" style={{ float: 'right' }}>
+                                                        <Button onClick={()=>{handleCommentLike(comment)}} variant="secondary" style={{ float: 'right' }}>
                                                             <FontAwesomeIcon icon={faThumbsUp} />{' '}
                                                             {comment.likedCount}
                                                         </Button>
@@ -152,7 +170,7 @@ const Thread = () => {
                                     </Card>)
                             })
                         }
-                        <PostComment />
+                        <PostComment postId={selectedPosts} />
                     </Col>)}
             </Row>
         </>
