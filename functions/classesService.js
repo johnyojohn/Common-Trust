@@ -1,4 +1,4 @@
-import {db} from "./firebase.js";
+import {db} from "./firebaseInit.js";
 import * as express from "express";
 import {addClassToUser} from "./putUtils.js";
 import {getDocs, collection, doc, setDoc} from "firebase/firestore";
