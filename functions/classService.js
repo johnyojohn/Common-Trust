@@ -11,7 +11,7 @@ router.get("/:id", async (req, res) => {
     const classDocReference = doc(db, "classes", id);
     await getDoc(classDocReference)
         .then((snapshot) => {
-            if (!snapshot.exists) {
+            if (!snapshot.exists()) {
                 return res.status(404).json({
                     message: "Class not found",
                 });
@@ -27,6 +27,7 @@ router.get("/:id", async (req, res) => {
             }
         })
         .catch((err) => {
+            console.error(err);
             return res.status(500).json({ error: err });
         });
 });
@@ -43,7 +44,7 @@ router.put("/:id", async (req, res) => {
     const classDocReference = doc(db, "classes", id);
     try {
         const classDoc = await getDoc(classDocReference);
-        if (!classDoc.exists) {
+        if (!classDoc.exists()) {
             return res.status(404).json({
                 message: "Class not found",
             });
@@ -79,6 +80,7 @@ router.put("/:id", async (req, res) => {
         }
     }
     catch (err) {
+        console.error(err);
         return res.status(500).json({ error: err });
     }
 });
@@ -88,7 +90,7 @@ router.delete("/:id", async (req, res) => {
     const classDocReference = doc(db, "classes", id);
     await getDoc(classDocReference)
         .then((snapshot) => {
-            if (!snapshot.exists) {
+            if (!snapshot.exists()) {
                 const error = new Error("Class not found");
                 error.status = 404;
                 throw error;
@@ -122,6 +124,7 @@ router.delete("/:id", async (req, res) => {
                 });
             }
             else {
+                console.error(err);
                 return res.status(500).json({ error: err });
             }
         });

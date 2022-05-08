@@ -10,7 +10,7 @@ router.get("/:id", (req, res) => {
     const id = req.params.id;
     getDoc(doc(db, "users", id))
         .then((snapshot) => {
-            if (!snapshot) {
+            if (!snapshot.exists()) {
                 return res.status(404).json({
                     message: "User not found",
                 });
@@ -26,6 +26,7 @@ router.get("/:id", (req, res) => {
             }
         })
         .catch((err) => {
+            console.error(err);
             return res.status(500).json({ error: err });
         });
 });
@@ -55,7 +56,8 @@ const userPostReqChek = (req) => {
       try {
         const userId = req.params.id;
         await addUserToClasses(userId, userPost.classes);
-        await setDoc(db, "users", userId, userPost);
+        const userDocReference = doc(db, "users", userId);
+        await setDoc(userDocReference, userPost);
         return res.status(201).json({
           message: "User created",
           data: {
@@ -64,6 +66,7 @@ const userPostReqChek = (req) => {
           },
         });
       } catch (err) {
+        console.log(err);
         return res.status(500).json({
           message: "Failed to create user",
           error: err,
@@ -85,7 +88,7 @@ router.put("/:id", async (req, res) => {
     const userDocReference = doc(db, "users", id);
     try {
         const userDoc = await getDoc(userDocReference);
-        if (!userDoc.exists) {
+        if (!userDoc.exists()) {
             return res.status(404).json({
                 message: "User not found",
             });
@@ -118,6 +121,7 @@ router.put("/:id", async (req, res) => {
         }
     }
     catch (err) {
+        console.error(err);
         return res.status(500).json({ error: err });
     }
 });
@@ -127,7 +131,7 @@ router.delete("/:id", async (req, res) => {
     const userDocReference = doc(db, "users", id);
     try {
         const userDoc = await getDoc(userDocReference);
-        if (!userDoc.exists) {
+        if (!userDoc.exists()) {
             return res.status(404).json({
                 message: "User not found",
             });
@@ -148,6 +152,7 @@ router.delete("/:id", async (req, res) => {
         }
     }
     catch (err) {
+        console.error(err);
         return res.status(500).json({ error: err });
     }
 });

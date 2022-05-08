@@ -30,6 +30,7 @@ router.get("/", async (req, res) => {
             });
         })
         .catch((err) => {
+            console.error(err);
             return res.status(500).json({ error: err });
         });
 });
@@ -46,7 +47,7 @@ router.post("/", async (req, res) => {
 
     const commentRef = doc(collection(db, "comments"));
     const commentId = commentRef.id;
-    var newComment = {
+    const newComment = {
         authorId: authorId,
         postId: postId,
         content: content,
@@ -73,6 +74,7 @@ router.post("/", async (req, res) => {
         }
     }
     catch (err) {
+        console.error(err);
         return res.status(500).json({ error: err });
     }
 });

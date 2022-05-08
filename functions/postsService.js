@@ -2,7 +2,7 @@ import { db } from "./firebase.js";
 import * as admin from "firebase-admin";
 import * as express from "express";
 import { addPostToClass, addPostToUser } from "./putUtils.js";
-import {getDocs, collection, doc, setDoc, getDoc, Timestamp} from "firebase/firestore";
+import {getDocs, collection, doc, setDoc, getDoc, serverTimestamp} from "firebase/firestore";
 
 const router = express.Router();
 
@@ -22,6 +22,7 @@ router.get("/", async (req, res) => {
             });
         })
         .catch((err) => {
+            console.error(err);
             return res.status(500).json({ error: err });
         });
 });
@@ -42,7 +43,7 @@ router.post("/", async (req, res) => {
     } else {
         const userDocReference = doc(collection(db, "users"), req.body.authorId);
         const userDoc = await getDoc(userDocReference);
-        if (!userDoc.exists) {
+        if (!userDoc.exists()) {
             return res.status(404).json({
                 "message": "User not found",
             });
@@ -50,7 +51,7 @@ router.post("/", async (req, res) => {
         const newPost = {
             title: req.body.title,
             content: req.body.content,
-            postDate: Timestamp.now().toDate(),
+            postDate: serverTimestamp(),
             likedUsers: [],
             likedCount: 0,
             classId: req.body.classId,
@@ -78,6 +79,7 @@ router.post("/", async (req, res) => {
                 });
             }
         } catch (err) {
+            console.error(err);
             return res.status(500).json({
                 message: "Failed to create post",
                 error: err,

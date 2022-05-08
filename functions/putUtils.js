@@ -87,9 +87,9 @@ const addClassToUser = async (classId, userId) => {
     if (!userSnapshot.exists) {
         return false;
     }
-    await userSnapshot.update({
-        classes: arrayUnion(classId),
-    })
+    await updateDoc(userDocReference, {
+        classesIdArr: arrayUnion(classId),
+    });
     return true;
 }
 

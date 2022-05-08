@@ -1,6 +1,5 @@
 import { db } from "./firebase.js";
 import * as express from "express";
-import { addUserToClasses } from "./putUtils.js";
 import { getDocs, collection } from "firebase/firestore";
 
 const router = express.Router();
@@ -20,6 +19,7 @@ router.get("/", async (req, res) => {
       });
     })
     .catch((err) => {
+      console.error(err);
       return res.status(500).json({
         message: "Failed to retrieve users",
         error: err

@@ -3,7 +3,7 @@ import * as express from "express";
 import * as firestore from "firebase/firestore";
 import { addPostToUser, addPostToClass } from "./putUtils.js";
 import { deletePostFromUser, deletePostFromClass, deleteAllCommentsFromPost } from "./deleteUtils.js";
-import { getDoc, doc, Timestamp, updateDoc, deleteDoc } from "firebase/firestore";
+import { getDoc, doc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 
 const router = express.Router();
 
@@ -12,7 +12,7 @@ router.get("/:id", (req, res) => {
     const postDocReference = doc(db, "posts", id);
     getDoc(postDocReference)
         .then((snapshot) => {
-            if (!snapshot) {
+            if (!snapshot.exists()) {
                 return res.status(404).json({
                     message: "Post not found",
                 });
@@ -28,6 +28,7 @@ router.get("/:id", (req, res) => {
             }
         })
         .catch((err) => {
+            console.error(err);
             return res.status(500).json({ error: err });
         });
 });
@@ -37,7 +38,7 @@ router.put("/:id", async (req, res) => {
     const id = req.params.id;
     const title = "title" in req.body ? req.body.title : null;
     const content = "content" in req.body ? req.body.content : null;
-    const postDate = Timestamp.now().toDate();
+    const postDate = serverTimestamp();
     const likedUsers = "likedUsers" in req.body ? req.body.likedUsers : null;
     const likedCount = "likedCount" in req.body ? req.body.likedCount : null;
     const classId = "classId" in req.body ? req.body.classId : null;
@@ -75,6 +76,7 @@ router.put("/:id", async (req, res) => {
         }
     }
     catch (err) {
+        console.error(err);
         return res.status(500).json({ error: err });
     }
 })
@@ -107,6 +109,7 @@ router.delete("/:id", async (req, res) => {
             }
         }
     } catch (err) {
+        console.error(err);
         return res.status(500).json({ error: err });
     }
 });

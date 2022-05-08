@@ -2,7 +2,7 @@ import { db } from "./firebase.js";
 import * as express from "express";
 import { addCommentToPost, addCommentToUser } from "./putUtils.js";
 import { deleteCommentFromPost, deleteCommentFromUser } from "./deleteUtils.js";
-import { getDoc, doc, updateDoc, arrayUnion, increment, deleteDoc } from "firebase/firestore";
+import { getDoc, doc, updateDoc, deleteDoc } from "firebase/firestore";
 
 const router = express.Router();
 
@@ -11,7 +11,7 @@ router.get("/:id", (req, res) => {
     const commentDocReference = doc(db, "comments", id);
     getDoc(commentDocReference)
         .then((snapshot) => {
-            if (!snapshot) {
+            if (!snapshot.exists()) {
                 return res.status(404).json({
                     message: "Comment not found",
                 });
@@ -27,6 +27,7 @@ router.get("/:id", (req, res) => {
             }
         })
         .catch((err) => {
+            console.error(err);
             return res.status(500).json({ error: err });
         });
 });
@@ -81,6 +82,7 @@ router.put("/:id", async (req, res) => {
         }
     }
     catch (err) {
+        console.error(err);
         return res.status(500).json({ error: err });
     }
 });
@@ -113,6 +115,7 @@ router.delete("/:id", async (req, res) => {
         }
     }
     catch (err) {
+        console.error(err);
         return res.status(500).json({ error: err });
     }
 });

@@ -1,7 +1,7 @@
 import { db } from "./firebase.js";
 import * as express from "express";
-import {addClassToUser} from "./putUtils.js";
-import {getDocs, collection, doc, setDoc} from "firebase/firestore";
+import { addClassToUser } from "./putUtils.js";
+import { getDocs, collection, doc, setDoc } from "firebase/firestore";
 
 const router = express.Router();
 
@@ -20,15 +20,16 @@ router.get("/", async (req, res) => {
             });
         })
         .catch((err) => {
+            console.error(err);
             return res.status(500).json({ error: err });
         });
 });
 
 const classPostReqCheck = (req) => {
     return ("departmentAbbr" in req.body &&
-    "courseNumber" in req.body &&
-    "courseFullTitle" in req.body &&
-    "instructorsIdArr" in req.body);
+        "courseNumber" in req.body &&
+        "courseFullTitle" in req.body &&
+        "instructorsIdArr" in req.body);
 }
 
 router.post("/", async (req, res) => {
@@ -39,7 +40,8 @@ router.post("/", async (req, res) => {
     } else {
         const classPost = {
             departmentAbbr: req.body.departmentAbbr,
-            courseNumber: req.body.courseNumber,
+            courseNumber: typeof (req.body.courseNumber) === "string" ?
+                parseInt(req.body.courseNumber) : req.body.courseNumber,
             courseFullTitle: req.body.courseFullTitle,
             instructorsIdArr: req.body.instructorsIdArr,
             postsIdArr: [],
@@ -48,10 +50,10 @@ router.post("/", async (req, res) => {
         try {
             const classRef = doc(collection(db, "classes"));
             const classId = classRef.id;
-            await setDoc(classRef, classPost);
-            for (instructorId of classPost.instructorsIdArr) {
+            for (const instructorId of classPost.instructorsIdArr) {
                 await addClassToUser(classId, instructorId);
             }
+            await setDoc(classRef, classPost);
             return res.status(201).json({
                 message: "Class created",
                 data: {
@@ -60,6 +62,7 @@ router.post("/", async (req, res) => {
                 },
             });
         } catch (err) {
+            console.error(err);
             return res.status(500).json({ error: err });
         }
     }
