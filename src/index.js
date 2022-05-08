@@ -5,6 +5,10 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faThumbsUp } from '@fortawesome/free-solid-svg-icons'
+
+library.add(faThumbsUp)
 
 ReactDOM.render(
   <BrowserRouter>

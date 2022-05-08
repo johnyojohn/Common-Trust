@@ -83,7 +83,7 @@ const MainHeader = ({user: curUser}) => {
                                     )
                                 })}
                             </NavDropdown>
-                            {isInstructor &&<Nav.Link href="/createclass">Create Class</Nav.Link> }
+                            {isInstructor &&<Nav.Link href="/class/create">Create Class</Nav.Link> }
                         </Nav>
                         <Nav>
                             <Nav.Link href="/user">User Details</Nav.Link>

@@ -1,9 +1,12 @@
-import {useEffect, useState} from 'react'
+import { useEffect, useState } from 'react'
 import ThreadOverview from "../components/ThreadList";
-import { Row, Col } from 'react-bootstrap';
+import { Row, Col, Button, Stack } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import Card from 'react-bootstrap/Card';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faThumbsUp } from '@fortawesome/free-solid-svg-icons';
+import PostComment from '../components/PostComment';
 
 const Thread = () => {
     const { id } = useParams();
@@ -14,43 +17,47 @@ const Thread = () => {
     const [selectedPostsContent, setSelectedPostsContent] = useState({});
     const [selectedPostsComments, setSelectedPostsComments] = useState([]);
     const getClassInfo = async () => {
-        try{
+        try {
             const response = await axios.get(`http://localhost:5001/common-trust/us-central1/default/class/${id}`);
             setClassInfo(response.data.data);
             setPosts(response.data.data.postsIdArr)
-        } catch(err){
+        } catch (err) {
             console.log(err);
         }
     }
 
     const getPostInfo = async (postId) => {
-        try{
+        try {
             const response = await axios.get(`http://localhost:5001/common-trust/us-central1/default/post/${postId}`);
-            setSelectedPostsContent(response.data.data);
+            const authorName = await axios.get(`http://localhost:5001/common-trust/us-central1/default/user/${response.data.data.authorId}`).then(snapshot => snapshot.data.data.firstName + " " + snapshot.data.data.lastName);
+            response.data.data.postDate = new Date(response.data.data.postDate.seconds * 1000).toLocaleString();
+            const date = new Date(response.data.data.postDate);
+            setSelectedPostsContent({ ...response.data.data, authorName: authorName });
             return response.data.data.commentsIdArr;
-        } catch(err){
+        } catch (err) {
             console.log(err);
         }
     }
 
-    useEffect(()=>{
+    useEffect(() => {
         getClassInfo();
     }, [])
 
-    useEffect(()=>{
-        if(selectedPosts!== ''){
+    useEffect(() => {
+        if (selectedPosts !== '') {
             getPostInfo(selectedPosts).then(
-                (commentIdArr)=>{
+                (commentIdArr) => {
                     setSelectedPostsComments([]);
                     commentIdArr.map(async (commentId) => {
-                        try{
+                        try {
                             const commentResponse = await axios.get(`http://localhost:5001/common-trust/us-central1/default/comment/${commentId}`);
                             const authorResponse = await axios.get(`http://localhost:5001/common-trust/us-central1/default/user/${commentResponse.data.data.authorId}`);
                             commentResponse.data.data.authorId = authorResponse.data.data.firstName + ' ' + authorResponse.data.data.lastName;
+                            commentResponse.data.data.dateCreated = new Date(commentResponse.data.data.dateCreated.seconds * 1000).toLocaleString();
                             console.log(commentResponse.data.data, "comment");
                             console.log(authorResponse.data.data, "author")
-                            setSelectedPostsComments((prevComments)=> [...prevComments, commentResponse.data.data]);
-                        } catch(err){
+                            setSelectedPostsComments((prevComments) => [...prevComments, commentResponse.data.data]);
+                        } catch (err) {
                             console.log(err);
                         }
                     })
@@ -59,7 +66,7 @@ const Thread = () => {
         }
     }, [selectedPosts])
 
-    useEffect(()=>{
+    useEffect(() => {
         console.log(selectedPostsComments, "entire comments");
     }, [selectedPostsComments])
     return (
@@ -67,59 +74,86 @@ const Thread = () => {
             <Row className="pt-3">
                 <Col style={{ paddingLeft: 25 }}>
                     <h3>Class feed</h3>
-                    <div className="text-muted">
+                    <div className="text-muted mb-3">
                         {classInfo.courseFullTitle}
                     </div>
+                    <Button variant="outline-primary" className="mb-3" href={"./" + id + "/post"}>
+                        Create post
+                    </Button>
                 </Col>
             </Row>
             <Row>
                 <Col sm={4}>
-                    <ThreadOverview postList = {posts} setSelectedPosts= {setSelectedPosts}/>
+                    <ThreadOverview postList={posts} setSelectedPosts={setSelectedPosts} />
                 </Col>
                 {selectedPosts !== '' && (
-                <Col sm={7}>
-                    <Card style={{ height: '18rem' }}>
-                        <Card.Header as="h5">
-                            {selectedPostsContent.title} 
-                        </Card.Header>
-                        <Card.Body>
-                            <Card.Text>
-                            {selectedPostsContent.content} 
-                            </Card.Text>
-                        </Card.Body>
-                    </Card>
-                    {
-                        selectedPostsComments.map((comment) => {
-                        return(
-                        <Card key={comment.id} className="mt-3 pb-0">
+                    <Col sm={7}>
+                        <Card style={{ height: '18rem' }}>
+                            <Card.Header as="h5">
+                                {selectedPostsContent.title}
+                            </Card.Header>
                             <Card.Body>
-                                <blockquote className="blockquote mb-0">
-                                    <p>
-                                        {comment.content}
-                                    </p>
-                                    <footer className="blockquote-footer">
-                                        {comment.authorId}
-                                    </footer>
-                                </blockquote>
+                                <Card.Text>
+                                    {selectedPostsContent.content}
+                                </Card.Text>
                             </Card.Body>
-                        </Card>)
-                            
-                        })
-                    }
-                    {/* <Card className="mt-3 pb-0">
-                        <Card.Body>
-                            <blockquote className="blockquote mb-0">
-                                <p>
-                                    Sample comment
-                                </p>
-                                <footer className="blockquote-footer">
-                                    Commenter name
-                                </footer>
-                            </blockquote>
-                        </Card.Body>
-                    </Card> */}
-                </Col>)}
-                
+                            <Card.Footer className="align-items-center">
+                                <Row className="align-items-center">
+                                    <Col sm={5} style={{ display: 'flex' }}>
+                                        <p>
+                                            {selectedPostsContent.authorName}
+                                        </p>
+                                    </Col>
+                                    <Col sm={7}>
+                                        <Stack style={{ float: 'right' }} direction="horizontal" gap={3}>
+                                            <p>
+                                                {'Posted on ' + selectedPostsContent.postDate}
+                                            </p>
+                                            <Button variant="secondary" style={{ float: 'right' }}>
+                                                <FontAwesomeIcon icon={faThumbsUp} />{' '}
+                                                {selectedPostsContent.likedCount}
+                                            </Button>
+                                        </Stack>
+                                    </Col>
+                                </Row>
+                            </Card.Footer>
+                        </Card>
+                        {
+                            selectedPostsComments.map((comment) => {
+                                return (
+                                    <Card key={comment.id} className="mt-3 pb-0">
+                                        <Card.Body>
+                                            <blockquote className="blockquote mb-0">
+                                                <p>
+                                                    {comment.content}
+                                                </p>
+                                            </blockquote>
+                                        </Card.Body>
+                                        <Card.Footer className="align-items-center">
+                                            <Row className="align-items-center">
+                                                <Col sm={5}>
+                                                    <p>
+                                                        {comment.authorId}
+                                                    </p>
+                                                </Col>
+                                                <Col sm={7}>
+                                                    <Stack style={{ float: 'right' }} direction="horizontal" gap={3}>
+                                                        <p>
+                                                            {'Posted on ' + comment.dateCreated}
+                                                        </p>
+                                                        <Button variant="secondary" style={{ float: 'right' }}>
+                                                            <FontAwesomeIcon icon={faThumbsUp} />{' '}
+                                                            {comment.likedCount}
+                                                        </Button>
+                                                    </Stack>
+                                                </Col>
+                                            </Row>
+                                        </Card.Footer>
+                                    </Card>)
+                            })
+                        }
+                        <PostComment />
+                    </Col>)}
             </Row>
         </>
     );
