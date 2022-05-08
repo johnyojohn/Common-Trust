@@ -20,7 +20,7 @@ const MainHeader = ({user: curUser}) => {
 
     const getClasses = async(userId) => {
         try{
-            const userResponse = await axios.get(`http://localhost:5001/common-trust/us-central1/default/user/${userId}`);
+            const userResponse = await axios.get(`https://us-central1-common-trust.cloudfunctions.net/default/user/${userId}`);
             setIsInstructor(userResponse.data.data.isInstructor);
             if(userResponse.data.data.classes !== classesList) {
                 setClassesList(userResponse.data.data.classes);
@@ -32,7 +32,7 @@ const MainHeader = ({user: curUser}) => {
         setClassesNameList([]);
         classesList.map(async (classId) => {
             try{
-                const nameResponse = await axios.get(`http://localhost:5001/common-trust/us-central1/default/class/${classId}`);
+                const nameResponse = await axios.get(`https://us-central1-common-trust.cloudfunctions.net/default/class/${classId}`);
                 setClassesNameList((prevName)=> [...prevName, {id: classId, name : nameResponse.data.data.courseFullTitle}]);
             } catch(err){
                 console.log(err);

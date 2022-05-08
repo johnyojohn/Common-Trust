@@ -27,7 +27,7 @@ const User = ({ user: curUser }) => {
 
     const getClassesInfo = async () => {
         try {
-            const response = await axios.get(`http://localhost:5001/common-trust/us-central1/default/classes`);
+            const response = await axios.get(`https://us-central1-common-trust.cloudfunctions.net/default/classes`);
             console.log(response.data.data, "allclasses")
             setAllClasses(response.data.data);
         } catch (err) {
@@ -37,7 +37,7 @@ const User = ({ user: curUser }) => {
 
     const getUserInfo = async (userId) => {
         try {
-            const response = await axios.get(`http://localhost:5001/common-trust/us-central1/default/user/${userId}`);
+            const response = await axios.get(`https://us-central1-common-trust.cloudfunctions.net/default/user/${userId}`);
             setUserInfo(response.data.data);
         } catch (err) {
             console.log(err);
@@ -47,10 +47,10 @@ const User = ({ user: curUser }) => {
     const getMyClasses = async (userId) => {
         try {
             setMyClassesNameList([]);
-            const userResponse = await axios.get(`http://localhost:5001/common-trust/us-central1/default/user/${userId}`);
+            const userResponse = await axios.get(`https://us-central1-common-trust.cloudfunctions.net/default/user/${userId}`);
             userResponse.data.data.classes.map(async (classId) => {
                 try {
-                    const nameResponse = await axios.get(`http://localhost:5001/common-trust/us-central1/default/class/${classId}`);
+                    const nameResponse = await axios.get(`https://us-central1-common-trust.cloudfunctions.net/default/class/${classId}`);
                     setMyClassesNameList((prevName) => [...prevName, { id: classId, name: nameResponse.data.data.courseFullTitle }]);
                 } catch (err) {
                     console.log(err);
@@ -65,7 +65,7 @@ const User = ({ user: curUser }) => {
             const putObject = { classes: myClassesNameList.map(({ id, name }) => { return id }) }
             if (firstName !== '') putObject['firstName'] = firstName;
             if (lastName !== '') putObject['lastName'] = lastName;
-            const response = await axios.put(`http://localhost:5001/common-trust/us-central1/default/user/${userInfo.id}`, putObject);
+            const response = await axios.put(`https://us-central1-common-trust.cloudfunctions.net/default/user/${userInfo.id}`, putObject);
             if (password !== '' && password === confirmPassword) {
                 const credential = EmailAuthProvider.credential(
                     curUser.user.email, currentPassword

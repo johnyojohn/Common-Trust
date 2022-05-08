@@ -26,7 +26,7 @@ const Thread = () => {
 
     const getClassInfo = async () => {
         try {
-            const response = await axios.get(`http://localhost:5001/common-trust/us-central1/default/class/${id}`);
+            const response = await axios.get(`https://us-central1-common-trust.cloudfunctions.net/default/class/${id}`);
             setClassInfo(response.data.data);
             setPosts(response.data.data.postsIdArr)
         } catch (err) {
@@ -36,8 +36,8 @@ const Thread = () => {
 
     const getPostInfo = async (postId) => {
         try {
-            const response = await axios.get(`http://localhost:5001/common-trust/us-central1/default/post/${postId}`);
-            const authorName = await axios.get(`http://localhost:5001/common-trust/us-central1/default/user/${response.data.data.authorId}`).then(snapshot => snapshot.data.data.firstName + " " + snapshot.data.data.lastName);
+            const response = await axios.get(`https://us-central1-common-trust.cloudfunctions.net/default/post/${postId}`);
+            const authorName = await axios.get(`https://us-central1-common-trust.cloudfunctions.net/default/user/${response.data.data.authorId}`).then(snapshot => snapshot.data.data.firstName + " " + snapshot.data.data.lastName);
             response.data.data.postDate = new Date(response.data.data.postDate.seconds * 1000).toLocaleString();
             const date = new Date(response.data.data.postDate);
             setSelectedPostsContent({ ...response.data.data, authorName: authorName });
@@ -49,7 +49,8 @@ const Thread = () => {
 
     const handleCommentLike = async (comment) => {
         try {
-            const response = await axios.put(`http://localhost:5001/common-trust/us-central1/default/comment/${comment.id}`,{userId: auth.currentUser.uid});
+            const response = await axios.put(`https://us-central1-common-trust.cloudfunctions.net/default/comment/${comment.id}`,{userId: auth.currentUser.uid});
+            window.location.reload(false);
         } catch (err) {
             console.log(err);
         }
@@ -57,7 +58,8 @@ const Thread = () => {
 
     const handlePostLike = async () => {
         try {
-            const response = await axios.put(`http://localhost:5001/common-trust/us-central1/default/post/${queryParams}`,{userId: auth.currentUser.uid});
+            const response = await axios.put(`https://us-central1-common-trust.cloudfunctions.net/default/post/${queryParams}`,{userId: auth.currentUser.uid});
+            window.location.reload(false);
         } catch (err) {
             console.log(err);
         }
@@ -75,8 +77,8 @@ const Thread = () => {
                     setSelectedPostsComments([]);
                     commentIdArr.map(async (commentId) => {
                         try {
-                            const commentResponse = await axios.get(`http://localhost:5001/common-trust/us-central1/default/comment/${commentId}`);
-                            const authorResponse = await axios.get(`http://localhost:5001/common-trust/us-central1/default/user/${commentResponse.data.data.authorId}`);
+                            const commentResponse = await axios.get(`https://us-central1-common-trust.cloudfunctions.net/default/comment/${commentId}`);
+                            const authorResponse = await axios.get(`https://us-central1-common-trust.cloudfunctions.net/default/user/${commentResponse.data.data.authorId}`);
                             commentResponse.data.data.authorId = authorResponse.data.data.firstName + ' ' + authorResponse.data.data.lastName;
                             commentResponse.data.data.dateCreated = new Date(commentResponse.data.data.dateCreated.seconds * 1000).toLocaleString();
                             console.log(commentResponse.data.data, "comment");

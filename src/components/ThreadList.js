@@ -11,7 +11,7 @@ const ThreadOverview = ({postList: postList, setSelectedPosts: setSelectedPosts}
         setPosts([]);
         postList.map(async (post) => {
             try{
-                const response = await axios.get(`http://localhost:5001/common-trust/us-central1/default/post/${post}`);
+                const response = await axios.get(`https://us-central1-common-trust.cloudfunctions.net/default/post/${post}`);
                 setPosts((prevPost)=> [...prevPost, response.data.data]);
             } catch(err){
                 console.log(err);

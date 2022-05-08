@@ -18,7 +18,7 @@ const PostComment = ({postId:postId}) => {
         if(comment.length > 0){
             try {
                 console.log(auth.currentUser.uid, postId, comment )
-                const response = await axios.post(`http://localhost:5001/common-trust/us-central1/default/comments`,{authorId:auth.currentUser.uid, postId: postId, content:comment });
+                const response = await axios.post(`https://us-central1-common-trust.cloudfunctions.net/default/comments`,{authorId:auth.currentUser.uid, postId: postId, content:comment });
                 window.location.reload(false);
             } catch (err) {
                 console.log(err);

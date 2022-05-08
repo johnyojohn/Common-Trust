@@ -26,7 +26,7 @@ const CreatePost = () => {
         if(title !== '' && content !== ''){
             try {
                 console.log(title, content, id, auth.currentUser.uid);
-                const postResponse = await axios.post(`http://localhost:5001/common-trust/us-central1/default/posts`,{title: title, content: content, classId: id, authorId:auth.currentUser.uid });
+                const postResponse = await axios.post(`https://us-central1-common-trust.cloudfunctions.net/default/posts`,{title: title, content: content, classId: id, authorId:auth.currentUser.uid });
                 navigate('/class/' + id);
             } catch (err) {
                 console.log(err);

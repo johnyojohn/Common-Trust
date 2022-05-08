@@ -24,7 +24,7 @@ const CreateClass = () => {
     // get instructors
     const getInstructors = async () => {
         try {
-            const response = await axios.get(`http://localhost:5001/common-trust/us-central1/default/users?isInstructor=true`);
+            const response = await axios.get(`https://us-central1-common-trust.cloudfunctions.net/default/users?isInstructor=true`);
             console.log(response.data.data)
             setEntireInstructors(response.data.data);
             const userInfo = response.data.data.find(e=>{return e.id === auth.currentUser.uid})
@@ -70,7 +70,7 @@ const CreateClass = () => {
         if(department !== '' && courseNumber !== '' && courseTitle !== '') {
             try{
                 const filteredInstructors = instructors.map((elem)=> {return elem.id});
-                const nameResponse = await axios.post(`http://localhost:5001/common-trust/us-central1/default/classes`,
+                const nameResponse = await axios.post(`https://us-central1-common-trust.cloudfunctions.net/default/classes`,
                 {departmentAbbr:department, courseNumber: courseNumber, courseFullTitle: courseTitle, instructorsIdArr: filteredInstructors});
                 console.log(nameResponse.data.data, "nameResponse")
                 navigate(/class/ + nameResponse.data.data.id);
