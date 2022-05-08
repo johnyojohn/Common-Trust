@@ -1,8 +1,40 @@
+import {useState} from 'react'
 import { Col, Row } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
+import {signInWithEmailAndPassword} from 'firebase/auth'
+import {auth} from '../firebase'
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
+
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const navigate = useNavigate();
+
+    const handleLogin = async (event) => {
+        event.preventDefault();
+        try{
+            const response = await signInWithEmailAndPassword(
+                auth,
+                email,
+                password
+            );
+            console.log(response);
+            navigate('/class');
+        } catch (error){
+            console.log(error);
+        }
+        console.log(email, password);
+    }
+
+    const handleEmailChange = (event) => {
+        setEmail(event.target.value);
+    }
+
+    const handlePasswordChange = (event) => {
+        setPassword(event.target.value);
+    }
     return (
         <>
             <Row sm={4} className="justify-content-md-center">
@@ -11,12 +43,12 @@ const Login = () => {
                     <Form>
                         <Form.Group className="mb-3" controlId="formBasicEmail">
                             <Form.Label>Email address</Form.Label>
-                            <Form.Control type="email" placeholder="Enter email" />
+                            <Form.Control onChange ={handleEmailChange} value= {email} type="email" placeholder="Enter email" />
                         </Form.Group>
 
                         <Form.Group className="mb-3" controlId="formBasicPassword">
                             <Form.Label>Password</Form.Label>
-                            <Form.Control type="password" placeholder="Password" />
+                            <Form.Control onChange={handlePasswordChange} value ={password} type="password" placeholder="Password" />
                         </Form.Group>
 
                         <Form.Group className="mb-3" >
@@ -25,7 +57,7 @@ const Login = () => {
                             </Form.Text>
                         </Form.Group>
 
-                        <Button variant="primary" type="submit">
+                        <Button onClick={handleLogin} variant="primary" type="submit">
                             Submit
                         </Button>
                     </Form>

@@ -1,7 +1,34 @@
 import { Tab, Row, Col } from 'react-bootstrap';
 import ListGroup from 'react-bootstrap/ListGroup';
+import {useEffect, useState} from 'react'
+import axios from 'axios'
 
-const ThreadOverview = () => {
+const ThreadOverview = ({postList: postList, setSelectedPosts: setSelectedPosts}) => {
+    const [posts, setPosts] = useState([]);
+    const loadPosts = () => {
+        setPosts([]);
+        postList.map(async (post) => {
+            console.log(post)
+            try{
+                const response = await axios.get(`http://localhost:5001/common-trust/us-central1/default/post/${post}`);
+                setPosts((prevPost)=> [...prevPost, response.data.data]);
+            } catch(err){
+                console.log(err);
+            }
+        })
+    }
+    useEffect(() => {
+        loadPosts();
+    }, []);
+
+    useEffect(() => {
+        loadPosts();
+    }, [postList])
+
+
+    const handlePostNavigate = (event, data) => {
+        setSelectedPosts(data.id);
+    }
     return (
         <div className="container">
             <div className="row">
@@ -9,7 +36,14 @@ const ThreadOverview = () => {
                     <Tab.Container id="left-tabs-example">
                         <Row>
                             <ListGroup>
-                                <ListGroup.Item action href="/questions/1">
+                                {posts.map((post, index) => {
+                                    console.log(post)
+                                    return(
+                                    <ListGroup.Item  key ={post.id} action onClick ={(e)=>{handlePostNavigate(e, post)}}>
+                                        {post.title}
+                                    </ListGroup.Item>)
+                                })}
+                                {/* <ListGroup.Item action href="/questions/1">
                                     Question 1
                                 </ListGroup.Item>
                                 <ListGroup.Item action href="/questions/2">
@@ -17,7 +51,7 @@ const ThreadOverview = () => {
                                 </ListGroup.Item>
                                 <ListGroup.Item action href="/questions/3">
                                     Question 3
-                                </ListGroup.Item>
+                                </ListGroup.Item> */}
                             </ListGroup>
                             {/* <Col sm={9}>
                                 <Tab.Content>
