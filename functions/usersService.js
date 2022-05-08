@@ -7,7 +7,7 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   const usersDocReference = Object.keys(req.query).length === 0 ?
     collection(db, "users") :
-    query(collection(db, "users"), where(Object.keys(req.query)[0], "==", Object.values(req.query)[0]));
+    query(collection(db, "users"), where(Object.keys(req.query)[0], "==", Object.values(req.query)[0] === "true" ? true : false));
   getDocs(usersDocReference)
     .then((snapshot) => {
       const users = snapshot.docs.map((doc) => {
