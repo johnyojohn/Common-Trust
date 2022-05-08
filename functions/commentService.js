@@ -36,8 +36,7 @@ router.put("/:id", async (req, res) => {
 
     const id = req.params.id;
     const content = "content" in req.body ? req.body.content : null;
-    const likedUsers = "likedUsers" in req.body ? [...new Set(req.body.likedUsers)] : null;
-    const likedCount = likedUsers !== null ? likedUsers.length : null;
+    const userId = "userId" in req.body ? req.body.userId : null;
     const postId = "postId" in req.body ? req.body.postId : null;
     const authorId = "authorId" in req.body ? req.body.authorId : null;
 
@@ -53,8 +52,6 @@ router.put("/:id", async (req, res) => {
             const comment = commentSnapshot.data();
             const varToString = varObj => Object.keys(varObj)[0];
             [[varToString({ content }), content], 
-            [varToString({ likedUsers }), likedUsers], 
-            [varToString({ likedCount }), likedCount], 
             [varToString({ postId }), postId], 
             [varToString({ authorId }), authorId]]
             .forEach(([key, value]) => {
@@ -62,7 +59,18 @@ router.put("/:id", async (req, res) => {
                     comment[key] = value;
                 }
             });
-            comment["likedCount"] = likedUsers !== null ? likedUsers.length : 0;
+
+            if (comment.likedUsers !== null && userId !== null) {
+                if (comment.likedUsers.includes(userId)) {
+                    comment.likedUsers = comment.likedUsers.filter(user => user !== userId);
+                    comment.likedCount = comment.likedUsers.length;
+                }
+                else {
+                    comment.likedUsers.push(userId);
+                    comment.likedCount = comment.likedUsers.length;
+                }
+            }
+
             const updateUser = await addCommentToUser(id, comment.authorId);
             const updatePost = await addCommentToPost(id, comment.postId);
             if (updateUser && updatePost) {

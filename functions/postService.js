@@ -39,9 +39,8 @@ router.put("/:id", async (req, res) => {
     const title = "title" in req.body ? req.body.title : null;
     const content = "content" in req.body ? req.body.content : null;
     const postDate = serverTimestamp();
-    const likedUsers = "likedUsers" in req.body ? [...new Set(req.body.likedUsers)] : null;
-    const likedCount = likedUsers !== null ? likedUsers.length : null;
     const commentsIdArr = "commentsIdArr" in req.body ? req.body.commentsIdArr : null;
+    const userId = "userId" in req.body ? req.body.userId : null;
 
     const postDocReference = doc(db, "posts", id);
     try {
@@ -57,14 +56,24 @@ router.put("/:id", async (req, res) => {
             [[varToString({ title }), title],
             [varToString({ content }), content],
             [varToString({ postDate }), postDate],
-            [varToString({ likedUsers }), likedUsers],
-            [varToString({ likedCount }), likedCount],
             [varToString({ commentsIdArr }), commentsIdArr]]
                 .forEach(([key, value]) => {
                     if (value !== null) {
                         post[key] = value;
                     }
                 });
+
+            if (post.likedUsers !== null && userId !== null) {
+                if (post.likedUsers.includes(userId)) {
+                    post.likedUsers = post.likedUsers.filter(user => user !== userId);
+                    post.likedCount = post.likedUsers.length;
+                }
+                else {
+                    post.likedUsers.push(userId);
+                    post.likedCount = post.likedUsers.length;
+                }
+            }
+
             await updateDoc(postDocReference, post);
             return res.status(200).json({
                 message: "Successfully updated post",
