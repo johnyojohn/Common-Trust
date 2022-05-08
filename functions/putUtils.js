@@ -81,6 +81,13 @@ const addUserToClasses = async (userId, classesIdArr) => {
     return true;
 }
 
+const addInstructorToClasses = async (instructorId, classesIdArr) => {
+    for (const classId of classesIdArr) {
+        await addInstructorToClass(instructorId, classId);
+    }
+    return true;
+}
+
 const addClassToUser = async (classId, userId) => {
     const userDocReference = doc(db, "users", userId);
     const userSnapshot = await getDoc(userDocReference);
@@ -88,9 +95,10 @@ const addClassToUser = async (classId, userId) => {
         return false;
     }
     await updateDoc(userDocReference, {
-        classesIdArr: arrayUnion(classId),
+        classes: arrayUnion(classId),
     });
     return true;
 }
 
-export { addCommentToUser, addCommentToPost, addPostToClass, addPostToUser, addUserToClasses, addInstructorToClass, addClassToUser, addUserToClass };
+export { addCommentToUser, addCommentToPost, addPostToClass, addPostToUser, addUserToClasses, 
+    addInstructorToClass, addInstructorToClasses, addClassToUser, addUserToClass };

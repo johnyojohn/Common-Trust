@@ -71,7 +71,7 @@ const deleteUserFromClass = async (userId, classId) => {
         return false;
     }
     await updateDoc(userDocReference, {
-        classesIdArr: arrayRemove(classId),
+        classes: arrayRemove(classId),
     });
     return true;
 }
@@ -90,7 +90,7 @@ const deleteClassFromUser = async (classId, userId) => {
         return false;
     }
     await updateDoc(userDocReference, {
-        classesIdArr: arrayRemove(classId),
+        classes: arrayRemove(classId),
     });
     return true;
 }

@@ -56,8 +56,8 @@ router.post("/", async (req, res) => {
         likedUsers: [],
     }
     try {
-        const updateUser = await addCommentToUser(authorId, commentId);
-        const updatePost = await addCommentToPost(postId, commentId);
+        const updateUser = await addCommentToUser(commentId, authorId);
+        const updatePost = await addCommentToPost(commentId, postId);
         if (updateUser && updatePost) {
             await setDoc(commentRef, newComment);
             return res.status(201).json({
