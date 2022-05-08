@@ -21,7 +21,6 @@ const MainHeader = ({user: curUser}) => {
     const getClasses = async(userId) => {
         try{
             const userResponse = await axios.get(`http://localhost:5001/common-trust/us-central1/default/user/${userId}`);
-            console.log(userResponse);
             setIsInstructor(userResponse.data.data.isInstructor);
             if(userResponse.data.data.classes !== classesList) {
                 setClassesList(userResponse.data.data.classes);

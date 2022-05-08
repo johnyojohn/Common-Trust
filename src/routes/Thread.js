@@ -69,7 +69,6 @@ const Thread = () => {
     }, [])
 
     useEffect(() => {
-        console.log(queryParams)
         if (queryParams !== null) {
             getPostInfo(queryParams).then(
                 (commentIdArr) => {
@@ -93,7 +92,6 @@ const Thread = () => {
     }, [queryParams])
 
     useEffect(() => {
-        console.log(selectedPostsComments, "entire comments");
     }, [selectedPostsComments])
     return (
         <>
