@@ -7,6 +7,11 @@ import {auth} from '../firebase'
 
 const MainHeader = ({user: curUser}) => {
 
+    const [isInstructor, setIsInstructor] = useState(false);
+    const [user, setUser] = useState(null);
+    const [classesList, setClassesList] = useState([]);
+    const [classesNameList, setClassesNameList] = useState([]);
+
     const handleLogOut= () => {
         signOut(auth).catch((error)=>{
             console.log(error);
@@ -17,6 +22,7 @@ const MainHeader = ({user: curUser}) => {
         try{
             const userResponse = await axios.get(`http://localhost:5001/common-trust/us-central1/default/user/${userId}`);
             console.log(userResponse);
+            setIsInstructor(userResponse.data.data.isInstructor);
             if(userResponse.data.data.classes !== classesList) {
                 setClassesList(userResponse.data.data.classes);
             }
@@ -35,9 +41,6 @@ const MainHeader = ({user: curUser}) => {
         })  
     }
 
-    const [user, setUser] = useState(null);
-    const [classesList, setClassesList] = useState([]);
-    const [classesNameList, setClassesNameList] = useState([]);
 
     useEffect(() => {
         setUser(curUser.user);
@@ -80,6 +83,7 @@ const MainHeader = ({user: curUser}) => {
                                     )
                                 })}
                             </NavDropdown>
+                            {isInstructor &&<Nav.Link href="/createclass">Create Class</Nav.Link> }
                         </Nav>
                         <Nav>
                             <Nav.Link href="/user">User Details</Nav.Link>
