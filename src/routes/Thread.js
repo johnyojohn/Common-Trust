@@ -47,10 +47,10 @@ const Thread = () => {
         }
     }
 
-    const handleCommentLike = async (comment) => {
+    const handleCommentLike = async (tempcomment) => {
         try {
-            const response = await axios.put(`https://us-central1-common-trust.cloudfunctions.net/default/comment/${comment.id}`,{userId: auth.currentUser.uid});
-            window.location.reload(false);
+            const response = await axios.put(`https://us-central1-common-trust.cloudfunctions.net/default/comment/${tempcomment.id}`,{userId: auth.currentUser.uid});
+            setSelectedPostsComments([...selectedPostsComments].map(comment => {if (comment.id === tempcomment.id) return {...comment, likedCount: response.data.data.likedCount}}))
         } catch (err) {
             console.log(err);
         }
@@ -59,7 +59,7 @@ const Thread = () => {
     const handlePostLike = async () => {
         try {
             const response = await axios.put(`https://us-central1-common-trust.cloudfunctions.net/default/post/${queryParams}`,{userId: auth.currentUser.uid});
-            window.location.reload(false);
+            setSelectedPostsContent({ ...selectedPostsContent, likedCount: response.data.data.likedCount });
         } catch (err) {
             console.log(err);
         }
