@@ -49,7 +49,7 @@ const Thread = () => {
             const response = await axios.put(`https://us-central1-common-trust.cloudfunctions.net/default/comment/${tempcomment.id}`, { userId: auth.currentUser.uid });
             setSelectedPostsComments([...selectedPostsComments].map(comment => {
                 return comment.id === tempcomment.id ?
-                    { ...comment, likedCount: response.data.data.likedCount } :
+                    { ...comment, likedCount: response.data.data.likedCount, likedUsers: response.data.data.likedUsers } :
                     comment;
             }))
         } catch (err) {
@@ -60,7 +60,7 @@ const Thread = () => {
     const handlePostLike = async () => {
         try {
             const response = await axios.put(`https://us-central1-common-trust.cloudfunctions.net/default/post/${postId}`, { userId: auth.currentUser.uid });
-            setSelectedPostsContent({ ...selectedPostsContent, likedCount: response.data.data.likedCount });
+            setSelectedPostsContent({ ...selectedPostsContent, likedCount: response.data.data.likedCount, likedUsers: response.data.data.likedUsers });
         } catch (err) {
             console.log(err);
         }
@@ -69,6 +69,7 @@ const Thread = () => {
 
     useEffect(() => {
         getClassInfo();
+        console.log(selectedPostsContent)
     }, [])
 
     useEffect(() => {
