@@ -1,32 +1,26 @@
 import { useEffect, useState } from 'react'
 import React from 'react'
-import ThreadOverview from "../components/ThreadList";
-import { Row, Col, Button, Stack } from 'react-bootstrap';
+import ThreadOverview from "../components/ThreadOverview";
+import { Row, Col, Button, ToggleButton, Stack } from 'react-bootstrap';
 import { useParams, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Card from 'react-bootstrap/Card';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 import PostComment from '../components/PostComment';
-import {auth} from '../firebase';
+import { auth } from '../firebase';
 
 const Thread = () => {
-    const { id } = useParams();
-    const queryParams = useQuery().get('q');
+    const { classId } = useParams();
+    const { postId } = useParams();
     const [classInfo, setClassInfo] = useState([]);
     const [posts, setPosts] = useState([]);
     const [selectedPostsContent, setSelectedPostsContent] = useState({});
     const [selectedPostsComments, setSelectedPostsComments] = useState([]);
 
-    function useQuery() {
-        const { search } = useLocation();
-      
-        return React.useMemo(() => new URLSearchParams(search), [search]);
-    }
-
     const getClassInfo = async () => {
         try {
-            const response = await axios.get(`https://us-central1-common-trust.cloudfunctions.net/default/class/${id}`);
+            const response = await axios.get(`https://us-central1-common-trust.cloudfunctions.net/default/class/${classId}`);
             setClassInfo(response.data.data);
             setPosts(response.data.data.postsIdArr)
         } catch (err) {
@@ -47,10 +41,17 @@ const Thread = () => {
         }
     }
 
-    const handleCommentLike = async (tempcomment) => {
+    const handleCommentLike = async (event, tempcomment) => {
         try {
-            const response = await axios.put(`https://us-central1-common-trust.cloudfunctions.net/default/comment/${tempcomment.id}`,{userId: auth.currentUser.uid});
-            setSelectedPostsComments([...selectedPostsComments].map(comment => {if (comment.id === tempcomment.id) return {...comment, likedCount: response.data.data.likedCount}}))
+            // console.log(event.currentTarget);
+            // event.currentTarget.checked = !event.currentTarget.checked;
+            // console.log(event.currentTarget.checked);
+            const response = await axios.put(`https://us-central1-common-trust.cloudfunctions.net/default/comment/${tempcomment.id}`, { userId: auth.currentUser.uid });
+            setSelectedPostsComments([...selectedPostsComments].map(comment => {
+                return comment.id === tempcomment.id ?
+                    { ...comment, likedCount: response.data.data.likedCount } :
+                    comment;
+            }))
         } catch (err) {
             console.log(err);
         }
@@ -58,7 +59,7 @@ const Thread = () => {
 
     const handlePostLike = async () => {
         try {
-            const response = await axios.put(`https://us-central1-common-trust.cloudfunctions.net/default/post/${queryParams}`,{userId: auth.currentUser.uid});
+            const response = await axios.put(`https://us-central1-common-trust.cloudfunctions.net/default/post/${postId}`, { userId: auth.currentUser.uid });
             setSelectedPostsContent({ ...selectedPostsContent, likedCount: response.data.data.likedCount });
         } catch (err) {
             console.log(err);
@@ -71,8 +72,8 @@ const Thread = () => {
     }, [])
 
     useEffect(() => {
-        if (queryParams !== null) {
-            getPostInfo(queryParams).then(
+        if (postId !== null && postId !== undefined) {
+            getPostInfo(postId).then(
                 (commentIdArr) => {
                     setSelectedPostsComments([]);
                     commentIdArr.map(async (commentId) => {
@@ -89,7 +90,7 @@ const Thread = () => {
                 }
             );
         }
-    }, [queryParams])
+    }, [postId])
 
     useEffect(() => {
     }, [selectedPostsComments])
@@ -101,16 +102,16 @@ const Thread = () => {
                     <div className="text-muted mb-3">
                         {classInfo.courseFullTitle}
                     </div>
-                    <Button variant="outline-primary" className="mb-3" href={"./" + id + "/post"}>
+                    <Button variant="outline-primary" className="mb-3" href={`/class/${classId}/post`}>
                         Create post
                     </Button>
                 </Col>
             </Row>
             <Row>
                 <Col sm={4}>
-                    <ThreadOverview postList={posts} />
+                    <ThreadOverview postList={posts} classId={classId} />
                 </Col>
-                {queryParams !== null && (
+                {postId !== null && postId !== undefined && (
                     <Col sm={7}>
                         <Card style={{ height: '18rem' }}>
                             <Card.Header as="h5">
@@ -133,7 +134,10 @@ const Thread = () => {
                                             <p>
                                                 {'Posted on ' + selectedPostsContent.postDate}
                                             </p>
-                                            <Button onClick={handlePostLike} variant="secondary" style={{ float: 'right' }}>
+                                            <Button
+                                                onClick={handlePostLike}
+                                                variant={selectedPostsContent.likedUsers?.includes(auth.currentUser.uid) ? "primary" : "secondary"}
+                                                style={{ float: 'right' }}>
                                                 <FontAwesomeIcon icon={faThumbsUp} />{' '}
                                                 {selectedPostsContent.likedCount}
                                             </Button>
@@ -144,39 +148,44 @@ const Thread = () => {
                         </Card>
                         {
                             selectedPostsComments.map((comment) => {
-                                return (
-                                    <Card key={comment.id} className="mt-3 pb-0">
-                                        <Card.Body>
-                                            <blockquote className="blockquote mb-0">
-                                                <p>
-                                                    {comment.content}
-                                                </p>
-                                            </blockquote>
-                                        </Card.Body>
-                                        <Card.Footer className="align-items-center">
-                                            <Row className="align-items-center">
-                                                <Col sm={5}>
+                                return comment === undefined ?
+                                    (<></>) :
+                                    (
+                                        <Card key={comment.id} className="mt-3 pb-0">
+                                            <Card.Body>
+                                                <blockquote className="blockquote mb-0">
                                                     <p>
-                                                        {comment.authorId}
+                                                        {comment.content}
                                                     </p>
-                                                </Col>
-                                                <Col sm={7}>
-                                                    <Stack style={{ float: 'right' }} direction="horizontal" gap={3}>
+                                                </blockquote>
+                                            </Card.Body>
+                                            <Card.Footer className="align-items-center">
+                                                <Row className="align-items-center">
+                                                    <Col sm={5}>
                                                         <p>
-                                                            {'Posted on ' + comment.dateCreated}
+                                                            {comment.authorId}
                                                         </p>
-                                                        <Button onClick={()=>{handleCommentLike(comment)}} variant="secondary" style={{ float: 'right' }}>
-                                                            <FontAwesomeIcon icon={faThumbsUp} />{' '}
-                                                            {comment.likedCount}
-                                                        </Button>
-                                                    </Stack>
-                                                </Col>
-                                            </Row>
-                                        </Card.Footer>
-                                    </Card>)
+                                                    </Col>
+                                                    <Col sm={7}>
+                                                        <Stack style={{ float: 'right' }} direction="horizontal" gap={3}>
+                                                            <p>
+                                                                {'Posted on ' + comment.dateCreated}
+                                                            </p>
+                                                            <Button
+                                                                onClick={(e) => { handleCommentLike(e, comment) }}
+                                                                variant={comment?.likedUsers?.includes(auth.currentUser.uid) ? "primary" : "secondary"}
+                                                                style={{ float: 'right' }}>
+                                                                <FontAwesomeIcon icon={faThumbsUp} />{' '}
+                                                                {comment.likedCount}
+                                                            </Button>
+                                                        </Stack>
+                                                    </Col>
+                                                </Row>
+                                            </Card.Footer>
+                                        </Card>)
                             })
                         }
-                        <PostComment postId={queryParams} />
+                        <PostComment postId={postId} />
                     </Col>)}
             </Row>
         </>

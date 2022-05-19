@@ -8,7 +8,7 @@ import {auth} from '../firebase'
 import axios from 'axios'
 
 const CreatePost = () => {
-    const { id } = useParams();
+    const { classId } = useParams();
     const navigate = useNavigate();
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
@@ -25,9 +25,9 @@ const CreatePost = () => {
         e.preventDefault();
         if(title !== '' && content !== ''){
             try {
-                console.log(title, content, id, auth.currentUser.uid);
-                const postResponse = await axios.post(`https://us-central1-common-trust.cloudfunctions.net/default/posts`,{title: title, content: content, classId: id, authorId:auth.currentUser.uid });
-                navigate('/class/' + id);
+                console.log(title, content, classId, auth.currentUser.uid);
+                const postResponse = await axios.post(`https://us-central1-common-trust.cloudfunctions.net/default/posts`,{title: title, content: content, classId: classId, authorId:auth.currentUser.uid });
+                navigate('/class/' + classId);
             } catch (err) {
                 console.log(err);
             }
