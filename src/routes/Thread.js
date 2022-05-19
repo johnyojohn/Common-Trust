@@ -69,7 +69,6 @@ const Thread = () => {
 
     useEffect(() => {
         getClassInfo();
-        console.log(selectedPostsContent)
     }, [])
 
     useEffect(() => {

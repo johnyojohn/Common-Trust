@@ -20,12 +20,10 @@ const Login = () => {
                 email,
                 password
             );
-            console.log(response);
-            navigate('/class');
+            navigate('/user');
         } catch (error){
             console.log(error);
         }
-        console.log(email, password);
     }
 
     const handleEmailChange = (event) => {

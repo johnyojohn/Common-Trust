@@ -2,7 +2,7 @@ import {useState} from 'react'
 import { Col, Row } from 'react-bootstrap';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import {auth} from '../firebase'
 import axios from 'axios'
 
@@ -21,15 +21,15 @@ const Register = () => {
                 auth,
                 email,
                 password);
-            // const registerDbResponse = await axios.post('users/'+registerResponse.user.uid,{
-            //     email: email,
-            //     firstName: firstName,
-            //     lastName: lastName,
-            // })
+            const verificationResponse = await sendEmailVerification(registerResponse.user);
+            const registerDbResponse = await axios.post('https://us-central1-common-trust.cloudfunctions.net/default/user/'+registerResponse.user.uid,{
+                email: email,
+                firstName: firstName,
+                lastName: lastName,
+            })
         } catch (error){
             console.log(error);
         }
-        console.log(firstName, lastName, email, password, confirmPassword);
     }
 
     const handleInputChange = (event) => {
