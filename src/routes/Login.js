@@ -54,6 +54,8 @@ const Login = () => {
                         <Form.Group className="mb-3" >
                             <Form.Text className="text-muted">
                                 Do not have an account? <a href="/register">Click here</a>
+                                <br></br>
+                                Forgot password? <a href="/reset">Click here</a>
                             </Form.Text>
                         </Form.Group>
 
