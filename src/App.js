@@ -5,6 +5,7 @@ import Login from './routes/Login';
 import Register from './routes/Register';
 import Thread from './routes/Thread';
 import User from './routes/User';
+import Reset from './routes/Reset';
 import MainHeader from './components/MainHeader';
 import CreateClass from './routes/CreateClass';
 import { auth } from './firebase';
@@ -33,6 +34,7 @@ function App() {
         <Routes>
           <Route path="/" element={<UnprotectedRoute user={user}><Login /></UnprotectedRoute>} />
           <Route path="/register" element={<UnprotectedRoute user={user}><Register /></UnprotectedRoute>} />
+          <Route path="/:userId/reset" element={<UnprotectedRoute user={user}><Reset /></UnprotectedRoute>} />
           <Route path="/user" element={<ProtectedRoute user={user}><User user={user} /></ProtectedRoute>} />
           <Route path="/class/:classId/">
             <Route path="" element={<ProtectedRoute user={user}><Thread /></ProtectedRoute>} />
