@@ -4,7 +4,7 @@ const UnprotectedRoute=({children:children, user:user})=>{
     return user.isChecking ? <div></div> :
         user.user === null
             ? children
-            : <Navigate to="/class" replace={true} />
+            : <Navigate to="/user" replace={true} />
 }
 
 export default UnprotectedRoute;
